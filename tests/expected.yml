@@ -1,0 +1,3 @@
+CidrBlock: '10.240.0.0/24'
+Tag: { Key: 'Name', Value: 'kubernetes-the-hard-way-aws' }
+State: 'available'
