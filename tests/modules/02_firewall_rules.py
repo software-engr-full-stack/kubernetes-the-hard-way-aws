@@ -30,9 +30,6 @@ class TestFirewallRules(object):
             '--filters', 'Name=group-id,Values={}'.format(sg_id),
             '--query', 'sort_by(SecurityGroupRules, &CidrIpv4)[].{a_Protocol:IpProtocol,b_FromPort:FromPort,c_ToPort:ToPort,d_Cidr:CidrIpv4}',
             '--output', 'table'
-
-            # 'aws', 'ec2', 'describe-security-groups',
-            # '--filters', 'Name=tag:Name,Values={}'.format(tag_value)
         ], stdout=subprocess.PIPE)
 
         exp = inspect.cleandoc('''
