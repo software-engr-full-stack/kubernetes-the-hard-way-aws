@@ -1,7 +1,6 @@
 import sys
 import subprocess
 import json
-import inspect
 
 from lib.expected import Expected
 
@@ -24,32 +23,33 @@ class TestFirewallRules(object):
         got_obj = got_list[0]
         sg_id = got_obj['GroupId']
 
-        # TODO: if table ordering is inconsistent, do it the hard way.
         result = subprocess.run([
             'aws', 'ec2', 'describe-security-group-rules',
             '--filters', 'Name=group-id,Values={}'.format(sg_id),
-            '--query', 'sort_by(SecurityGroupRules, &CidrIpv4)[].{a_Protocol:IpProtocol,b_FromPort:FromPort,c_ToPort:ToPort,d_Cidr:CidrIpv4}',
-            '--output', 'table'
+            '--query', 'sort_by(SecurityGroupRules, &CidrIpv4)[].{a_Protocol:IpProtocol,b_FromPort:FromPort,c_ToPort:ToPort,d_Cidr:CidrIpv4}'
         ], stdout=subprocess.PIPE)
 
-        exp = inspect.cleandoc('''
-            -----------------------------------------------------------
-            |               DescribeSecurityGroupRules                |
-            +------------+-------------+-----------+------------------+
-            | a_Protocol | b_FromPort  | c_ToPort  |     d_Cidr       |
-            +------------+-------------+-----------+------------------+
-            |  -1        |  -1         |  -1       |  0.0.0.0/0       |
-            |  tcp       |  22         |  22       |  0.0.0.0/0       |
-            |  tcp       |  6443       |  6443     |  0.0.0.0/0       |
-            |  icmp      |  -1         |  -1       |  0.0.0.0/0       |
-            |  -1        |  -1         |  -1       |  10.200.0.0/16   |
-            |  -1        |  -1         |  -1       |  10.240.0.0/24   |
-            +------------+-------------+-----------+------------------+''').strip()
+        got_list = json.loads(result.stdout)
+        exp_table = expected.data['SecurityGroupRules']
 
-        got = result.stdout.decode('utf-8').strip()
-
+        key = 'length'
+        got = len(got_list)
+        exp = len(exp_table)
         if got != exp:
-            raise ValueError("route table test failed, got != exp, '{}' != '{}'".format(got, exp))
+            raise ValueError("'{}' failed, got != exp, '{}' != '{}'".format(key, got, exp))
+
+        key = 'route key'
+        for got_rte in got_list:
+            got = ':'.join([
+                str(got_rte['a_Protocol']),
+                str(got_rte['b_FromPort']),
+                str(got_rte['c_ToPort']),
+                str(got_rte['d_Cidr'])
+            ])
+            if got not in exp_table:
+                raise ValueError(
+                    "'{}' failed, got '{}' not in exp table...\n{}".format(key, got, exp_table)
+                )
 
 
 if __name__ == '__main__':

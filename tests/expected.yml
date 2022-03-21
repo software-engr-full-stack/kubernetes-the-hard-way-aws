@@ -1,3 +1,35 @@
 CidrBlock: '10.240.0.0/24'
 Tag: { Key: 'Name', Value: 'kubernetes-the-hard-way-aws' }
 State: 'available'
+
+SecurityGroupRules:
+  -1:-1:-1:0.0.0.0/0:
+    a_Protocol: '-1'
+    b_FromPort: -1
+    c_ToPort: -1
+    d_Cidr: 0.0.0.0/0
+  -1:-1:-1:10.200.0.0/16:
+    a_Protocol: '-1'
+    b_FromPort: -1
+    c_ToPort: -1
+    d_Cidr: 10.200.0.0/16
+  -1:-1:-1:10.240.0.0/24:
+    a_Protocol: '-1'
+    b_FromPort: -1
+    c_ToPort: -1
+    d_Cidr: 10.240.0.0/24
+  icmp:-1:-1:0.0.0.0/0:
+    a_Protocol: icmp
+    b_FromPort: -1
+    c_ToPort: -1
+    d_Cidr: 0.0.0.0/0
+  tcp:22:22:0.0.0.0/0:
+    a_Protocol: tcp
+    b_FromPort: 22
+    c_ToPort: 22
+    d_Cidr: 0.0.0.0/0
+  tcp:6443:6443:0.0.0.0/0:
+    a_Protocol: tcp
+    b_FromPort: 6443
+    c_ToPort: 6443
+    d_Cidr: 0.0.0.0/0
