@@ -17,7 +17,7 @@ provider "aws" {
   region = local.region
 }
 
-module "kube" {
+module "network" {
   source = "./modules/01_networking"
 
   tag = local.tag
@@ -27,4 +27,8 @@ module "kube" {
   ssh_port = local.ssh_port
   kube_apiserver_port = local.kube_apiserver_port
   pod_cidr_block = local.pod_cidr_block
+}
+
+module "compute_instances" {
+  source = "./modules/02_compute_instances"
 }
