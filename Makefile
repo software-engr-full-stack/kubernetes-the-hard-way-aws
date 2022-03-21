@@ -1,6 +1,16 @@
 
 name := kubernetes-the-hard-way
 _key_pair_file := ./secrets/${name}.ed25519
+_terraform_dir := ./terraform
+
+plan:
+	cd "${_terraform_dir}" && terraform plan
+
+apply:
+	cd "${_terraform_dir}" && terraform apply -auto-approve
+
+destroy:
+	cd "${_terraform_dir}" && terraform destroy -auto-approve
 
 key-pair:
 	mkdir -p "$$(dirname "${_key_pair_file}")" && \
@@ -16,4 +26,4 @@ delete-key-pair:
 	aws ec2 delete-key-pair --key-name "${name}" && \
 	rm "${_key_pair_file}"
 
-.PHONY: key-pair
+.PHONY: plan apply destroy key-pair delete-key-pair
