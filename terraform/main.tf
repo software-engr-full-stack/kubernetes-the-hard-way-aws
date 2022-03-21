@@ -18,7 +18,7 @@ provider "aws" {
 }
 
 module "kube" {
-  source = "./modules"
+  source = "./modules/01_networking"
 
   tag = local.tag
   cidr_block = local.cidr_block

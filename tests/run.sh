@@ -7,9 +7,9 @@ run() {
   local test_data_file="$this_dir/expected.yml"
 
   declare -a test_files=(
-    '01_networking'
-    '02_firewall_rules'
-    '03_kubernetes_public_ip_address'
+    '01_networking/01_virtual_private_cloud_network'
+    '01_networking/02_firewall_rules'
+    '01_networking/03_kubernetes_public_ip_address'
   )
 
   local test_file=
