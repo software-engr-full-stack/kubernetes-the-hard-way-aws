@@ -1,5 +1,5 @@
 
-name := kubernetes-the-hard-way
+name := kubernetes-the-hard-way-aws
 _key_pair_file := ./secrets/${name}.ed25519
 _terraform_dir := ./terraform
 
