@@ -26,4 +26,7 @@ delete-key-pair:
 	aws ec2 delete-key-pair --key-name "${name}" && \
 	rm "${_key_pair_file}"
 
-.PHONY: plan apply destroy key-pair delete-key-pair
+tests:
+	cd ./tests && ./run.sh
+
+.PHONY: plan apply destroy key-pair delete-key-pair tests
