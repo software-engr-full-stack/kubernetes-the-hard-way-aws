@@ -50,6 +50,8 @@ resource "aws_route" "kube" {
   gateway_id = aws_internet_gateway.kube.id
 }
 
-# output "vpc" {
-#   value = aws_vpc.vpc
-# }
+output "virtual_private_cloud_network" {
+  value = {
+    subnet = aws_subnet.kube
+  }
+}

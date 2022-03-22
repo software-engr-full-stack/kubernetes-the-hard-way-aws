@@ -33,3 +33,15 @@ SecurityGroupRules:
     b_FromPort: 6443
     c_ToPort: 6443
     d_Cidr: 0.0.0.0/0
+
+Instances:
+  b_ZONE: 'us-west-1a'
+  f_STATUS: 'running'
+  Controller:
+    Basename: 'controller-'
+    Count: 1
+    c_MACHINE_TYPE: 't2.micro'
+  Worker:
+    Basename: 'worker-'
+    Count: 1
+    c_MACHINE_TYPE: 't2.micro'

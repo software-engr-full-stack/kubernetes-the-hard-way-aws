@@ -23,7 +23,3 @@ data "aws_ami" "kube" {
 
   owners = ["099720109477"] # Canonical
 }
-
-output "ami_image" {
-  value = data.aws_ami.kube
-}

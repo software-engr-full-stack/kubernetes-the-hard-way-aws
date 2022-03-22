@@ -61,3 +61,7 @@ resource "aws_security_group" "kube" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+output "firewall" {
+  value = aws_security_group.kube
+}
