@@ -6,17 +6,10 @@ run() {
 
   local test_data_file="$this_dir/expected.yml"
 
-  declare -a test_files=(
-    '01_networking/01_virtual_private_cloud_network'
-    '01_networking/02_firewall_rules'
-    '01_networking/03_kubernetes_public_ip_address'
-    '02_compute_instances/02_compute_instances'
-  )
-
   local test_file=
-  for test_file in "${test_files[@]}"; do
-    printf "$test_file: "
-    python "$modules_dir/$test_file.py" "$test_data_file" && ok
+  for test_file in $(find "$modules_dir" -type f -iname '0*' | sort); do
+    printf "$(cut -d '/' -f 9- <<< "$test_file"): "
+    python "$test_file" "$test_data_file" && ok
   done
 }
 
