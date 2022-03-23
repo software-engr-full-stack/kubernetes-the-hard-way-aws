@@ -5,6 +5,9 @@ run() {
 
   . "$this_dir/../../lib/public-addresses.sh"
 
+  local certs_dir="$this_dir/../../secrets/certs"
+  mkdir -p "$certs_dir"
+
   local country='US'
   local city='Los Angeles'
   local state='California'
@@ -14,7 +17,7 @@ run() {
   ##### Certificate Authority ####
   ################################
 
-  cat > ca-config.json <<EOF
+  cat > "$certs_dir"/ca-config.json <<EOF
 {
   "signing": {
     "default": {
@@ -30,7 +33,7 @@ run() {
 }
 EOF
 
-  cat > ca-csr.json <<EOF
+  cat > "$certs_dir"/ca-csr.json <<EOF
 {
   "CN": "Kubernetes",
   "key": {
@@ -49,10 +52,13 @@ EOF
 }
 EOF
 
-  cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+  cfssl gencert -initca "$certs_dir"/ca-csr.json | cfssljson -bare ca
   # Results:
   # ca-key.pem
   # ca.pem
+  mv ca-key.pem "$certs_dir"
+  mv ca.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   ########################################
   #### Client and Server Certificates ####
@@ -60,7 +66,7 @@ EOF
 
   # **** The Admin Client Certificate **** #
 
-  cat > admin-csr.json <<EOF
+  cat > "$certs_dir"/admin-csr.json <<EOF
 {
   "CN": "admin",
   "key": {
@@ -80,14 +86,17 @@ EOF
 EOF
 
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -profile=kubernetes \
-    admin-csr.json | cfssljson -bare admin
+    "$certs_dir"/admin-csr.json | cfssljson -bare admin
   # Results:
   # admin-key.pem
   # admin.pem
+  mv admin-key.pem "$certs_dir"
+  mv admin.pem "$certs_dir"/
+  mv *.csr "$certs_dir"
 
   # **** The Kubelet Client Certificates **** #
 
@@ -95,7 +104,7 @@ EOF
   for i in 0; do
     local instance="worker-${i}"
     local INSTANCE_HOSTNAME="ip-10-240-0-2${i}"
-    cat > ${instance}-csr.json <<EOF
+    cat > "$certs_dir"/${instance}-csr.json <<EOF
 {
   "CN": "system:node:${INSTANCE_HOSTNAME}",
   "key": {
@@ -118,20 +127,23 @@ EOF
     local INTERNAL_IP="10.240.0.2${i}"
 
     cfssl gencert \
-      -ca=ca.pem \
-      -ca-key=ca-key.pem \
-      -config=ca-config.json \
+      -ca="$certs_dir"/ca.pem \
+      -ca-key="$certs_dir"/ca-key.pem \
+      -config="$certs_dir"/ca-config.json \
       -hostname=${INSTANCE_HOSTNAME},${EXTERNAL_IP},${INTERNAL_IP} \
       -profile=kubernetes \
-      ${instance}-csr.json | cfssljson -bare ${instance}
+      "$certs_dir"/${instance}-csr.json | cfssljson -bare ${instance}
   done
   # Results:
   # worker-0-key.pem
   # worker-0.pem
+  mv worker-0-key.pem "$certs_dir"
+  mv worker-0.pem "$certs_dir"/
+  mv *.csr "$certs_dir"
 
   # **** The Controller Manager Client Certificate **** #
 
-  cat > kube-controller-manager-csr.json <<EOF
+  cat > "$certs_dir"/kube-controller-manager-csr.json <<EOF
 {
   "CN": "system:kube-controller-manager",
   "key": {
@@ -151,18 +163,21 @@ EOF
 EOF
 
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -profile=kubernetes \
-    kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
+    "$certs_dir"/kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
   # Results:
   # kube-controller-manager-key.pem
   # kube-controller-manager.pem
+  mv kube-controller-manager-key.pem "$certs_dir"
+  mv kube-controller-manager.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   # **** The Kube Proxy Client Certificate **** #
 
-  cat > kube-proxy-csr.json <<EOF
+  cat > "$certs_dir"/kube-proxy-csr.json <<EOF
 {
   "CN": "system:kube-proxy",
   "key": {
@@ -182,18 +197,21 @@ EOF
 EOF
 
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -profile=kubernetes \
-    kube-proxy-csr.json | cfssljson -bare kube-proxy
+    "$certs_dir"/kube-proxy-csr.json | cfssljson -bare kube-proxy
   # Results:
   # kube-proxy-key.pem
   # kube-proxy.pem
+  mv kube-proxy-key.pem "$certs_dir"
+  mv kube-proxy.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   # **** The Scheduler Client Certificate **** #
 
-  cat > kube-scheduler-csr.json <<EOF
+  cat > "$certs_dir"/kube-scheduler-csr.json <<EOF
 {
   "CN": "system:kube-scheduler",
   "key": {
@@ -212,14 +230,17 @@ EOF
 }
 EOF
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -profile=kubernetes \
-    kube-scheduler-csr.json | cfssljson -bare kube-scheduler
+    "$certs_dir"/kube-scheduler-csr.json | cfssljson -bare kube-scheduler
   # Results:
   # kube-scheduler-key.pem
   # kube-scheduler.pem
+  mv kube-scheduler-key.pem "$certs_dir"
+  mv kube-scheduler.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   # **** The Kubernetes API Server Certificate **** #
 
@@ -230,7 +251,7 @@ EOF
 
   local KUBERNETES_HOSTNAMES=kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
 
-  cat > kubernetes-csr.json <<EOF
+  cat > "$certs_dir"/kubernetes-csr.json <<EOF
 {
   "CN": "kubernetes",
   "key": {
@@ -251,21 +272,24 @@ EOF
 
   # TODO: parameterize instead of hard-coding "0", "1", etc.
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -hostname=10.32.0.1,10.240.0.10,${CONTROLLER_INSTANCE_HOSTNAMES},${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,${KUBERNETES_HOSTNAMES} \
     -profile=kubernetes \
-    kubernetes-csr.json | cfssljson -bare kubernetes
+    "$certs_dir"/kubernetes-csr.json | cfssljson -bare kubernetes
   # Results:
   # kubernetes-key.pem
   # kubernetes.pem
+  mv kubernetes-key.pem "$certs_dir"
+  mv kubernetes.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   ######################################
   #### The Service Account Key Pair ####
   ######################################
 
-  cat > service-account-csr.json <<EOF
+  cat > "$certs_dir"/service-account-csr.json <<EOF
 {
   "CN": "service-accounts",
   "key": {
@@ -285,14 +309,17 @@ EOF
 EOF
 
   cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
+    -ca="$certs_dir"/ca.pem \
+    -ca-key="$certs_dir"/ca-key.pem \
+    -config="$certs_dir"/ca-config.json \
     -profile=kubernetes \
-    service-account-csr.json | cfssljson -bare service-account
+    "$certs_dir"/service-account-csr.json | cfssljson -bare service-account
   # Results:
   # service-account-key.pem
   # service-account.pem
+  mv service-account-key.pem "$certs_dir"
+  mv service-account.pem "$certs_dir"
+  mv *.csr "$certs_dir"
 
   local id_file="$this_dir/../../secrets/kubernetes-the-hard-way-aws.ed25519"
 
@@ -300,7 +327,9 @@ EOF
   for instance in worker-0; do
     scp -i "$id_file" \
       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-      ca.pem ${instance}-key.pem ${instance}.pem \
+      "$certs_dir"/ca.pem \
+      "$certs_dir"/${instance}-key.pem \
+      "$certs_dir"/${instance}.pem \
       ubuntu@${PUBLIC_ADDRESS[${instance}]}:~/
   done
 
@@ -308,8 +337,8 @@ EOF
   for instance in controller-0; do
     scp -i "$id_file" \
       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-      ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-      service-account-key.pem service-account.pem \
+      "$certs_dir"/ca.pem "$certs_dir"/ca-key.pem "$certs_dir"/kubernetes-key.pem "$certs_dir"/kubernetes.pem \
+      "$certs_dir"/service-account-key.pem "$certs_dir"/service-account.pem \
       ubuntu@${PUBLIC_ADDRESS[${instance}]}:~/
   done
 }
