@@ -24,7 +24,7 @@ run() {
       "C": "US",
       "L": "Portland",
       "O": "Kubernetes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "Kubernetes The Hard Way - AWS",
       "ST": "Oregon"
     }
   ]

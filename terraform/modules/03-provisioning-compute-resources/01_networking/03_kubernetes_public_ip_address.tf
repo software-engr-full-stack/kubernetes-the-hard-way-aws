@@ -4,3 +4,7 @@ resource "aws_eip" "kube" {
   }
   vpc = true
 }
+
+output "eip" {
+  value = aws_eip.kube
+}

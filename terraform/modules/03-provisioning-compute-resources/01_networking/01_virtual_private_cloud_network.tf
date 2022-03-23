@@ -53,5 +53,6 @@ resource "aws_route" "kube" {
 output "virtual_private_cloud_network" {
   value = {
     subnet = aws_subnet.kube
+    vpc    = aws_vpc.kube
   }
 }

@@ -18,7 +18,7 @@ provider "aws" {
 }
 
 module "network" {
-  source = "./modules/01_networking"
+  source = "./modules/03-provisioning-compute-resources/01_networking"
 
   tag = local.tag
   cidr_block = local.cidr_block
@@ -30,10 +30,9 @@ module "network" {
 }
 
 module "compute_instances" {
-  source = "./modules/02_compute_instances"
+  source                     = "./modules/03-provisioning-compute-resources/02_compute_instances"
 
   security_groups            = [module.network.firewall.id]
-
   subnet_id                  = module.network.virtual_private_cloud_network.subnet.id
 
   key_name                   = local.tag.value
@@ -45,4 +44,18 @@ module "compute_instances" {
   worker_instances_count     = local.worker_instances_count
   worker_instance_type       = local.worker_instance_type
   worker_private_base_ip     = local.worker_private_base_ip
+}
+
+module "load_balancer" {
+  source                                  = "./modules/08-bootstrapping-the-kubernetes-control-plane"
+
+  tag                                     = local.tag
+  subnet_id                               = module.network.virtual_private_cloud_network.subnet.id
+  kubernetes_public_address_allocation_id = module.network.eip.allocation_id
+  vpc_id                                  = module.network.virtual_private_cloud_network.vpc.id
+  instance_controllers                    = module.compute_instances.instance_controllers
+}
+
+output "DEBUG" {
+  value = module.load_balancer
 }

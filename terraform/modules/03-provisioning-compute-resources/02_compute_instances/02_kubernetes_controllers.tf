@@ -33,3 +33,7 @@ resource "aws_instance" "controllers" {
     Name = format("controller-%d", count.index)
   }
 }
+
+output "instance_controllers" {
+  value = aws_instance.controllers
+}
