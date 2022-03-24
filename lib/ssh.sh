@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 run() {
-  local num="${1:-0}"
+  local num="${HOST_NUM:-0}"
   local upload_files="${UPLOAD-}"
 
   local caller=

@@ -3,11 +3,9 @@
 run() {
   local files="${1?:ERROR => must pass files to upload}"
 
-  local host_num="${HOST_NUM-}"
-
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-  UPLOAD="$@" CALLER="$CALLER" "$this_dir/ssh.sh" "$host_num"
+  UPLOAD="$@" CALLER="$CALLER" HOST_NUM="${HOST_NUM-}" "$this_dir/ssh.sh"
 }
 
 set -o errexit
