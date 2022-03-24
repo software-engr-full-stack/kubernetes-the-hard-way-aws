@@ -55,7 +55,3 @@ module "load_balancer" {
   vpc_id                                  = module.network.virtual_private_cloud_network.vpc.id
   instance_controllers                    = module.compute_instances.instance_controllers
 }
-
-output "DEBUG" {
-  value = module.load_balancer
-}

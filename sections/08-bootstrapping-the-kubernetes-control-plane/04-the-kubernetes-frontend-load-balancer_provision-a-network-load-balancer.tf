@@ -82,12 +82,3 @@ resource "aws_lb_listener" "kube" {
     Name = var.tag.value
   }
 }
-
-output "DEBUG" {
-  value = {
-    aws_lb = aws_lb.kube
-    aws_lb_target_group = aws_lb_target_group.kube
-    aws_lb_target_group_attachment = aws_lb_target_group_attachment.kube
-    aws_lb_listener = aws_lb_listener.kube
-  }
-}
