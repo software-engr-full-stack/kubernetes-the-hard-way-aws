@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 run() {
-  local host_num="${HOST_NUM-}"
-
   local caller="$(basename --suffix .sh "$BASH_SOURCE" | cut -f 5 -d '-')"
 
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
@@ -24,7 +22,7 @@ run() {
   done
   rm -v "$kfilename"
 
-  CALLER="$caller" "$upload_cmd" \
+  CALLER="$caller" HOST_NUM="${HOST_NUM-}" "$upload_cmd" \
     "$this_dir/02-run-inside-controller_provision-the-kubernetes-control-plane.sh" \
     "$this_dir/03-run-inside-controller_rbac-for-kubelet-authorization.sh"
 }
