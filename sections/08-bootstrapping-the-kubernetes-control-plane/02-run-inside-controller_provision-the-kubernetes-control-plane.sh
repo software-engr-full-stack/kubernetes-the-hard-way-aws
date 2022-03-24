@@ -189,6 +189,8 @@ Cache-Control: no-cache, private
 X-Content-Type-Options: nosniff
 X-Kubernetes-Pf-Flowschema-Uid: c43f32eb-e038-457f-9474-571d43e5c325
 X-Kubernetes-Pf-Prioritylevel-Uid: 8ba5908f-5569-4330-80fd-c643e7512366
+
+ok
 EOF
 }
 
