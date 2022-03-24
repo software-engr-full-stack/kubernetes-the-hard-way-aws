@@ -4,10 +4,8 @@ run() {
   local num="${HOST_NUM:-0}"
   local upload_files="${UPLOAD-}"
 
-  local caller=
-  if [ -n "$upload_files" ]; then
-    caller="$CALLER"
-  else
+  local caller="${CALLER-}"
+  if [ -z "$caller" ]; then
     caller="$(basename "$BASH_SOURCE" | cut -f 3 -d '-')"
   fi
 
@@ -38,7 +36,7 @@ run() {
       ubuntu@"$external_ip":~/
   else
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-      -i "$id_file" ubuntu@${external_ip}
+      -i "$id_file" ubuntu@${external_ip} "$@"
   fi
 }
 
