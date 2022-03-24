@@ -42,3 +42,7 @@ resource "aws_instance" "workers" {
     Name = format("worker-%d", count.index)
   }
 }
+
+output "instance_workers" {
+  value = aws_instance.workers
+}

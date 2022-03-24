@@ -55,3 +55,11 @@ module "load_balancer" {
   vpc_id                                  = module.network.virtual_private_cloud_network.vpc.id
   instance_controllers                    = module.compute_instances.instance_controllers
 }
+
+module "pod_network_routes" {
+  source = "./11-provisioning-pod-network-routes"
+
+  route_table            = module.network.virtual_private_cloud_network.route_table
+  destination_cidr_block = local.pod_cidr_block
+  instance_workers       = module.compute_instances.instance_workers
+}

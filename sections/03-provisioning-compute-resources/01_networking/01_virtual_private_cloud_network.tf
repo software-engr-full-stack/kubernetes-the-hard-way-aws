@@ -54,5 +54,6 @@ output "virtual_private_cloud_network" {
   value = {
     subnet = aws_subnet.kube
     vpc    = aws_vpc.kube
+    route_table = aws_route_table.kube
   }
 }
