@@ -6,7 +6,7 @@ run() {
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
   CALLER="$caller" HOST_NUM="${HOST_NUM-}" "$this_dir/../../lib/upload.sh" \
-    "$this_dir/02-run-inside-controller.sh"
+    "$this_dir/07-02-run-inside-controller.sh"
 }
 
 set -o errexit

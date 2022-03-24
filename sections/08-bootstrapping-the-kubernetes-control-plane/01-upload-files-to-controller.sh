@@ -23,8 +23,8 @@ run() {
   rm -v "$kfilename"
 
   CALLER="$caller" HOST_NUM="${HOST_NUM-}" "$upload_cmd" \
-    "$this_dir/02-run-inside-controller_provision-the-kubernetes-control-plane.sh" \
-    "$this_dir/03-run-inside-controller_rbac-for-kubelet-authorization.sh"
+    "$this_dir/08-02-run-inside-controller_provision-the-kubernetes-control-plane.sh" \
+    "$this_dir/08-03-run-inside-controller_rbac-for-kubelet-authorization.sh"
 }
 
 set -o errexit

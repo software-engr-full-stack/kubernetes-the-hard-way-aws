@@ -10,7 +10,7 @@ run() {
   local upload_cmd="$this_dir/../../lib/upload.sh"
 
   CALLER="$caller" HOST_NUM="${HOST_NUM-}" "$upload_cmd" \
-    "$this_dir/02-run-inside-worker.sh"
+    "$this_dir/09-02-run-inside-worker.sh"
 }
 
 set -o errexit
