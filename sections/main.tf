@@ -63,3 +63,11 @@ module "pod_network_routes" {
   destination_cidr_block = local.pod_cidr_block
   instance_workers       = module.compute_instances.instance_workers
 }
+
+module "nginx_kubernetes_node_port" {
+  count = var.nginx_kubernetes_node_port != "" ? 1 : 0
+  source = "./13-smoke-test"
+
+  nginx_kubernetes_node_port = var.nginx_kubernetes_node_port
+  security_group_id = module.network.firewall.id
+}

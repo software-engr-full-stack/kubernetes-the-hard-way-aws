@@ -1,3 +1,8 @@
+variable "nginx_kubernetes_node_port" {
+  type = string
+  default = ""
+}
+
 locals {
   ssh_port = 22
   kube_apiserver_port = 6443
