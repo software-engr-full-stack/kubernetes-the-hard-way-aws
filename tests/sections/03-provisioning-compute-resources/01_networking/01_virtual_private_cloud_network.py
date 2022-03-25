@@ -150,7 +150,8 @@ class TestRouteSetup(object):
 
         expected_routes_table = {
             '10.240.0.0/24': {'GatewayId': 'local'},
-            '0.0.0.0/0':     {'GatewayId': igw.id}
+            '0.0.0.0/0':     {'GatewayId': igw.id},
+            '10.200.0.0/16': {'NetworkInterfaceId': '???'}
         }
 
         for route in got_obj['Routes']:
@@ -161,11 +162,21 @@ class TestRouteSetup(object):
                     "destination CIDR block '{}' not found in route table".format(got_dest_cidr_block)
                 )
 
-            key = 'GatewayId'
-            got = route[key]
-            exp = expected_routes_table[got_dest_cidr_block][key]
-            if got != exp:
-                raise ValueError("'{}' failed, got != exp, '{}' != '{}'".format(key, got, exp))
+            gwi_key = 'GatewayId'
+            nii_key = 'NetworkInterfaceId'
+            if gwi_key in route:
+                key = gwi_key
+                got = route[key]
+                exp = expected_routes_table[got_dest_cidr_block][key]
+                if got != exp:
+                    raise ValueError("'{}' failed, got != exp, '{}' != '{}'".format(key, got, exp))
+            elif nii_key in route:
+                key = nii_key
+                got = route[key]
+                if got.strip() == '':
+                    raise ValueError("'{}' failed, got '{}' should not be blank ''".format(key, got))
+            else:
+                raise ValueError("got route '{}' should have '{}' or '{}' key".format(route, gwi_key, nii_key))
 
 
 if __name__ == '__main__':
