@@ -3,18 +3,27 @@ name := kubernetes-the-hard-way-aws
 _sections_dir := $(dir $(abspath $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))))
 _sections_dir := $(_sections_dir:/=)
 
-_config_file := ${_sections_dir}/config.yml
+_sections_app_dir := $(abspath ${_sections_dir}/..)
 
-_secrets_dir := $(abspath ${_sections_dir}/../secrets)
+_sections_config_file := ${_sections_dir}/config.yml
 
-_certs_dir := ${_secrets_dir}/test-certs
-_auto_gen_config_dir := ${_secrets_dir}/config-auto-gen
-_key_pair_file := ${_secrets_dir}/${name}.ed25519
+_sections_secrets_dir := $(abspath ${_sections_app_dir}/secrets)
 
+_sections_certs_dir := ${_sections_secrets_dir}/test-certs
+_sections_auto_gen_config_dir := ${_sections_secrets_dir}/config-auto-gen
+_sections_key_pair_file := ${_sections_secrets_dir}/${name}.ed25519
+
+_sections_hostnames := controller-0 controller-1 controller-2 worker-0 worker-1 worker-2
+
+debug:
+	"${_sections_app_dir}/lib/public_addresses.py" ${_sections_hostnames}
 
 build:
 	cd "${_sections_dir}" && \
-	"${_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" "${_certs_dir}" "${_config_file}"
+	"${_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
+		"${_sections_certs_dir}" \
+		"${_sections_config_file}" \
+		"${_sections_app_dir}/lib/public_addresses.py" ${_sections_hostnames}
 
 # build: delete-key-pair key-pair
 # 	cd "${_sections_dir}" && \
@@ -53,17 +62,17 @@ build:
 # 	"${_sections_dir}/13-smoke-test/09-curl-nginx-test.sh"
 
 key-pair:
-	mkdir -p "$$(dirname "${_key_pair_file}")" && \
-	[ -f "${_key_pair_file}" ] || \
+	mkdir -p "$$(dirname "${_sections_key_pair_file}")" && \
+	[ -f "${_sections_key_pair_file}" ] || \
 	aws ec2 create-key-pair \
 	  --key-name "${name}" \
 	  --key-type 'ed25519' \
 	  --output text --query 'KeyMaterial' \
-	  > "${_key_pair_file}" && \
-	chmod 600 "${_key_pair_file}"
+	  > "${_sections_key_pair_file}" && \
+	chmod 600 "${_sections_key_pair_file}"
 
 delete-key-pair:
 	aws ec2 delete-key-pair --key-name "${name}" && \
-	rm "${_key_pair_file}"
+	rm "${_sections_key_pair_file}"
 
 .PHONY: build key-pair delete-key-pair
