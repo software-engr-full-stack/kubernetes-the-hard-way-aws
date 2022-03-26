@@ -12,6 +12,7 @@ build:
 	"${_sections_dir}/07-bootstrapping-the-etcd-cluster/01-upload-files-to-controller.sh" && \
 	"${_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/01-upload-files-to-controller.sh" && \
 	"${_sections_dir}/09-bootstrapping-the-kubernetes-worker-nodes/01-upload-files-to-worker.sh" && \
+	"${_sections_dir}/10-configuring-kubectl-for-remote-access/run.sh" && \
 	"${_sections_dir}/12-deploying-the-dns-cluster-add-on/01-upload-files-to-worker.sh"
 
 .PHONY: build
