@@ -29,9 +29,9 @@ EOF
   echo
 
   echo '**** Services ****'
-  if ! kubectl get deployments.apps \
-    --selector app=nginx \
-    --output jsonpath='{.items[0].metadata.name}' >/dev/null; then
+  if ! kubectl get services \
+      --selector app=nginx \
+      --output jsonpath='{.items[0].spec.ports[0].port}' >/dev/null; then
     kubectl expose deployment nginx --port 80 --type NodePort
   fi
 
