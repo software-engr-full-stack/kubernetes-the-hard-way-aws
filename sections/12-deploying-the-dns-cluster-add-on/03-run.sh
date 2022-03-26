@@ -28,7 +28,12 @@ EOF
   echo '######################'
   echo '#### Verification ####'
   echo '######################'
-  kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
+
+  if ! kubectl get pods \
+    --selector run=busybox \
+    --output jsonpath='{.items[0].metadata.name}' >/dev/null; then
+      kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
+  fi
   kubectl get pods -l run=busybox
 
   echo
