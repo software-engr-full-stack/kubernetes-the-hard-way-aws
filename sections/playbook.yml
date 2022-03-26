@@ -1,0 +1,7 @@
+---
+- hosts: default
+
+  remote_user: '{{ ubuntu }}'
+
+  tasks:
+    - import_tasks: '{{ cm_dir }}/tasks/ssh/tasks.yml'
