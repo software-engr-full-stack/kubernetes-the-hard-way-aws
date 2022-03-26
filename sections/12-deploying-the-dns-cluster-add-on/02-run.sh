@@ -32,7 +32,11 @@ EOF
   if ! kubectl get pods \
     --selector run=busybox \
     --output jsonpath='{.items[0].metadata.name}' >/dev/null; then
-      kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
+    kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
+
+    local delay=10
+    echo "... sleeping for '$delay' seconds"
+    sleep "$delay"
   fi
   kubectl get pods -l run=busybox
 
@@ -44,8 +48,6 @@ busybox   1/1     Running   0          3s
 EOF
   echo
 
-  echo '... sleeping for 5 seconds'
-  sleep 5
   local POD_NAME=$(kubectl get pods -l run=busybox -o jsonpath="{.items[0].metadata.name}")
   kubectl exec -ti $POD_NAME -- nslookup kubernetes
 

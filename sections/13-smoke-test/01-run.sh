@@ -47,6 +47,10 @@ EOF
 
   echo '**** Deployments ****'
   kubectl create deployment nginx --image=nginx
+  local delay=10
+  echo "... sleeping for '$delay' seconds"
+  sleep "$delay"
+
   kubectl get pods -l app=nginx
 
   echo
