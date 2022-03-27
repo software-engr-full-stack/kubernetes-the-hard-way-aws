@@ -34,7 +34,7 @@ EOF
     --output jsonpath='{.items[0].metadata.name}' >/dev/null; then
     kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
 
-    local delay=10
+    local delay=20
     echo "... sleeping for '$delay' seconds"
     sleep "$delay"
   fi
