@@ -19,18 +19,23 @@ class PublicAddresses(object):
             '--query=Reservations[].Instances[].[Tags[?Key==`Name`].Value | [0],PublicIpAddress]'
         ], stdout=subprocess.PIPE)
 
-        hostname_table = {
+        data = {
             item[0]: item[1] for item in json.loads(result.stdout)
         }
 
         for given_hn in hostnames:
-            if given_hn not in hostname_table:
+            if given_hn not in data:
                 raise ValueError(
                     "... ERROR: given hostname '{}' not in provisioned hosts table...\n{}".format(
                         given_hn,
-                        hostname_table
+                        data
                     )
                 )
+
+        self.__data = data
+
+    def __getitem__(self, key):
+        return self.__data[key]
 
 
 if __name__ == '__main__':
