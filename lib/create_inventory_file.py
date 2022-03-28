@@ -23,7 +23,7 @@ class CreateInventoryFile(object):
             '-t', '--host-type',
             dest='host_type',
             required=True,
-            help='host type whether controller or worker'
+            help='host type whether "controller" or "worker"'
         )
 
         parser.add_argument(
