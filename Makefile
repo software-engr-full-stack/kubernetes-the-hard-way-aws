@@ -12,20 +12,33 @@ _main_key_pair_file := ${_main_secrets_dir}/${name}.ed25519
 
 _main_sections_dir := ${_main_dir}/sections
 
-_main_inventory_file := /tmp/${name}/ubuntu-focal_aws.inventory
+_main_inventory_file_workers := /temp/current/${name}/ubuntu-focal_aws_workers.inventory
+_main_inventory_file_controllers := /temp/current/${name}/ubuntu-focal_aws_controllers.inventory
 
-debug:
+# TODO: DEBUG
+_main_certs_dir := ${_main_secrets_dir}/test-certs
+
+ansible:
 	"${_main_app_dir}/lib/create_inventory_file.py" \
 		--config-file "${_main_config_file}" \
-		--host-type 'controller' \
-		--inventory-file "${_main_inventory_file}"
+		--host-type 'worker' \
+		--inventory-file "${_main_inventory_file_workers}" && \
+	ANSIBLE_CONFIG="${_main_app_dir}/ansible.cfg" \
+	ansible-playbook \
+		--inventory-file "${_main_inventory_file_workers}" \
+		--extra-vars "ansible_ssh_private_key_file=${_main_key_pair_file}" \
+		--extra-vars "base_name=${name}" \
+		--extra-vars "certs_dir=${_main_certs_dir}" \
+		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml" \
 
-# debug:
-# 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
-# 		"${name}" \
-# 		"${_main_config_file}" && \
-# 	"${_main_app_dir}/lib/create_inventory_file.py" \
-# 		--inventory-file "${__main_inventory_file}"
+debug:
+	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
+		"${name}" \
+		"${_main_config_file}" \
+		"${_main_key_pair_file}"
+
+reset:
+	rm -rf "${_main_certs_dir}"
 
 # build: delete-key-pair key-pair
 # 	cd "${_main_dir}" && \
