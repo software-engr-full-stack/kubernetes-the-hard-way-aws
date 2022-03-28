@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 run() {
+  echo '... TODO' >&2
+  exit 1
+
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
   local NODE_PORT=$(kubectl get svc nginx \
@@ -8,7 +11,7 @@ run() {
 
   [ -n "$NODE_PORT" ] || exit 1
 
-  cd "$this_dir"/..
+  cd "$this_dir"/../../..
 
   terraform apply -auto-approve -var=nginx_kubernetes_node_port="$NODE_PORT"
 }
