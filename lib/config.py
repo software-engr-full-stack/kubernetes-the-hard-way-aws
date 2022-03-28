@@ -16,3 +16,7 @@ class Config(object):
         self.all_hostnames = [
             host['hostname'] for host in [*self.controllers, *self.workers]
         ]
+
+        self.controller_aws_hostnames = [
+            host['aws_hostname'] for host in self.controllers
+        ]
