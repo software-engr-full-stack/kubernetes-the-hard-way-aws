@@ -5,30 +5,50 @@ import pathlib
 import os
 import inspect
 import subprocess
-
+import time
 
 this_file = pathlib.Path((inspect.getfile(inspect.currentframe())))
 app_dir = this_file.joinpath('..', '..', '..').resolve()
 sys.path.insert(0, app_dir.as_posix())
 
-from lib.config import Config
-from lib.public_addresses import PublicAddresses
-from lib.path import Path
+from lib.config import Config  # noqa: E402
+from lib.public_addresses import PublicAddresses  # noqa: E402
+from lib.path import Path  # noqa: E402
 
 
 class Run(object):
-    def __init__(self, name, config_file):
+    def __init__(self, name, config_file, id_file):
         config = Config(config_file)
 
-        public_addresses = PublicAddresses(name, config.all_hostnames)
+        public_addresses = PublicAddresses(config.all_hostnames, name=name)
         path = Path()
 
         certs_path = path.certs
         certs_path.mkdir(parents=True, exist_ok=True)
 
-        print('##### Certificate Authority ####')
+        if self._certs_present(certs_path):
+            print('... certificates already created, returning...')
+            return
 
+        self._certs(config, public_addresses, certs_path)
+
+        self._upload(config, public_addresses, certs_path, id_file)
+
+    def _sync_and_delay(self, delay=2):
+        subprocess.run(['sync'])
+        print("... sleeping for '{}' seconds to allow files to be written to storage...".format(delay))
+        time.sleep(delay)
+
+    def _certs_present(self, certs_path):
+        # TODO: do more robust check, probably check every file that is supposed to be created.
+        files = os.listdir(certs_path)
+
+        return len(files) >= 33
+
+    def _certs(self, config, public_addresses, certs_path):
         os.chdir(certs_path)
+
+        print('##### Certificate Authority ####')
 
         base_name = 'ca'
         out_file = certs_path.joinpath('{}-config.json'.format(base_name))
@@ -80,17 +100,20 @@ class Run(object):
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
+        self._sync_and_delay()
+
         print()
         print('#### Client and Server Certificates ####')
 
         print('# **** The Admin Client Certificate **** #')
-        out_file = certs_path.joinpath('admin-csr.json')
+        base_name = 'admin'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
         print("Writing '{}'...".format(out_file))
         with open(out_file, 'w') as stream:
             stream.write(inspect.cleandoc(
                 '''
                     {{
-                      "CN": "admin",
+                      "CN": "{base_name}",
                       "key": {{
                         "algo": "rsa",
                         "size": 2048
@@ -105,7 +128,7 @@ class Run(object):
                         }}
                       ]
                     }}
-                '''.format(**config.organization)
+                '''.format(**{**config.organization, **{'base_name': base_name}})
             ))
 
         p1 = subprocess.Popen([
@@ -116,8 +139,10 @@ class Run(object):
             '-profile=kubernetes',
             out_file
         ], stdout=subprocess.PIPE)
-        subprocess.Popen(['cfssljson', '-bare', 'admin'], stdin=p1.stdout)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        self._sync_and_delay()
 
         print()
         print('# **** The Kubelet Client Certificates **** #')
@@ -163,6 +188,8 @@ class Run(object):
             subprocess.Popen(['cfssljson', '-bare', name], stdin=p1.stdout)
             p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
+        self._sync_and_delay()
+
         print()
         print('# **** The Controller Manager Client Certificate **** #')
         base_name = 'kube-controller-manager'
@@ -200,6 +227,8 @@ class Run(object):
         ], stdout=subprocess.PIPE)
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        self._sync_and_delay()
 
         print()
         print('# **** The Kube Proxy Client Certificate **** #')
@@ -239,6 +268,8 @@ class Run(object):
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
+        self._sync_and_delay()
+
         print()
         print('# **** The Scheduler Client Certificate **** #')
         base_name = 'kube-scheduler'
@@ -276,6 +307,8 @@ class Run(object):
         ], stdout=subprocess.PIPE)
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        self._sync_and_delay(4)
 
         print()
         print('# **** The Kubernetes API Server Certificate **** #')
@@ -333,6 +366,8 @@ class Run(object):
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
+        self._sync_and_delay()
+
         print()
         print('#### The Service Account Key Pair ####')
         base_name = 'service-account'
@@ -371,5 +406,55 @@ class Run(object):
         subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
+        self._sync_and_delay()
 
-Run(sys.argv[1], sys.argv[2])
+    def _upload(self, config, public_addresses, certs_path, id_file):
+        for hname in config.worker_hostnames:
+            pub_addr = public_addresses[hname]
+
+            files = [
+                '{}/{}'.format(certs_path, bname) for bname in [
+                    'ca.pem',
+                    '{}-key.pem'.format(hname),
+                    '{}.pem'.format(hname),
+                ]
+            ]
+
+            result = subprocess.run([
+                'scp',
+                '-i', id_file,
+                '-o', 'StrictHostKeyChecking=no', '-o UserKnownHostsFile=/dev/null',
+                *files,
+                'ubuntu@{}:~/'.format(pub_addr)
+            ], stdout=subprocess.PIPE)
+            stdout = result.stdout.decode('utf-8').strip()
+            if stdout != '':
+                print(stdout)
+
+        for hname in config.controller_hostnames:
+            pub_addr = public_addresses[hname]
+
+            files = [
+                '{}/{}'.format(certs_path, bname) for bname in [
+                    'ca.pem',
+                    'ca-key.pem',
+                    'kubernetes-key.pem',
+                    'kubernetes.pem',
+                    'service-account-key.pem',
+                    'service-account.pem'
+                ]
+            ]
+
+            result = subprocess.run([
+                'scp',
+                '-i', id_file,
+                '-o', 'StrictHostKeyChecking=no', '-o UserKnownHostsFile=/dev/null',
+                *files,
+                'ubuntu@{}:~/'.format(pub_addr)
+            ], stdout=subprocess.PIPE)
+            stdout = result.stdout.decode('utf-8').strip()
+            if stdout != '':
+                print(stdout)
+
+
+Run(sys.argv[1], sys.argv[2], sys.argv[3])
