@@ -2,4 +2,4 @@
 {remote_ips}
 
 [test]
-localhost
+localhost ansible_connection=local
