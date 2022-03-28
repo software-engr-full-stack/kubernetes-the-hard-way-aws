@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
 
-# import sys
+import sys
 import pathlib
 import os
 import inspect
-import yaml
 import subprocess
 
 
-class Run(object):
-    def __init__(self, certs_dir, config_file, public_addresses):
-        certs_path = pathlib.Path(certs_dir)
-        certs_path.mkdir(parents=True, exist_ok=True)
+this_file = pathlib.Path((inspect.getfile(inspect.currentframe())))
+app_dir = this_file.joinpath('..', '..', '..').resolve()
+sys.path.insert(0, app_dir.as_posix())
 
-        with open(config_file, 'r') as stream:
-            try:
-                config = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                raise ValueError('YAML error: {}'.format(exc))
+from lib.config import Config
+from lib.public_addresses import PublicAddresses
+from lib.path import Path
+
+
+class Run(object):
+    def __init__(self, name, config_file):
+        config = Config(config_file)
+
+        public_addresses = PublicAddresses(name, config.all_hostnames)
+        path = Path()
+
+        certs_path = path.certs
+        certs_path.mkdir(parents=True, exist_ok=True)
 
         print('##### Certificate Authority ####')
 
-        os.chdir(certs_dir)
+        os.chdir(certs_path)
 
-        out_file = certs_path.joinpath('ca-config.json')
+        base_name = 'ca'
+        out_file = certs_path.joinpath('{}-config.json'.format(base_name))
         print("Writing '{}'...".format(out_file))
         with open(out_file, 'w') as stream:
             stream.write(inspect.cleandoc(
@@ -44,8 +52,7 @@ class Run(object):
                 '''
             ))
 
-        ca_csr = certs_path.joinpath('ca-csr.json')
-        out_file = ca_csr
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
         print("Writing '{}'...".format(out_file))
         with open(out_file, 'w') as stream:
             stream.write(inspect.cleandoc(
@@ -66,19 +73,18 @@ class Run(object):
                         }}
                       ]
                     }}
-                '''.format(**config)
+                '''.format(**config.organization)
             ))
 
-        p1 = subprocess.Popen(['cfssl', 'gencert', '-initca',  ca_csr], stdout=subprocess.PIPE)
-        subprocess.Popen(['cfssljson', '-bare', 'ca'], stdin=p1.stdout)
+        p1 = subprocess.Popen(['cfssl', 'gencert', '-initca',  out_file], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
         print()
         print('#### Client and Server Certificates ####')
 
         print('# **** The Admin Client Certificate **** #')
-        admin_csr = certs_path.joinpath('admin-csr.json')
-        out_file = admin_csr
+        out_file = certs_path.joinpath('admin-csr.json')
         print("Writing '{}'...".format(out_file))
         with open(out_file, 'w') as stream:
             stream.write(inspect.cleandoc(
@@ -99,16 +105,16 @@ class Run(object):
                         }}
                       ]
                     }}
-                '''.format(**config)
+                '''.format(**config.organization)
             ))
 
         p1 = subprocess.Popen([
             'cfssl', 'gencert',
-            '-ca={certs_path}/ca.pem'.format(certs_path=certs_path),
-            '-ca-key={certs_path}/ca-key.pem'.format(certs_path=certs_path),
-            '-config={certs_path}/ca-config.json'.format(certs_path=certs_path),
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
             '-profile=kubernetes',
-            admin_csr
+            out_file
         ], stdout=subprocess.PIPE)
         subprocess.Popen(['cfssljson', '-bare', 'admin'], stdin=p1.stdout)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
@@ -116,19 +122,15 @@ class Run(object):
         print()
         print('# **** The Kubelet Client Certificates **** #')
 
-        # TODO: parameterize instead of hard-coding "0", "1", etc.
-        host_type = 'worker'
-        ip_base = 'ip-10-240-0-2'
-        for ix in [0]:
-            instance = '-'.join([host_type, ix])
-            instance_hostname = ''.join([ip_base, ix])
-            instance_csr = certs_path.joinpath('{}-csr.json'.format(instance))
-            out_file = instance_csr
+        for host in config.workers:
+            name = host['hostname']
+            aws_hostname = host['aws_hostname']
+            out_file = certs_path.joinpath('{}-csr.json'.format(name))
             with open(out_file, 'w') as stream:
                 stream.write(inspect.cleandoc(
                     '''
                         {{
-                          "CN": "system:node:${instance_hostname}",
+                          "CN": "system:node:{aws_hostname}",
                           "key": {{
                             "algo": "rsa",
                             "size": 2048
@@ -143,19 +145,231 @@ class Run(object):
                             }}
                           ]
                         }}
-                    '''.format(**{**config, **{'instance_hostname': instance_hostname}})
+                    '''.format(**{**config.organization, **{'aws_hostname': aws_hostname}})
                 ))
-            # local EXTERNAL_IP=${PUBLIC_ADDRESS[${instance}]}
 
-            # local INTERNAL_IP="10.240.0.2${i}"
+            external_ip = public_addresses[name]
+            internal_ip = host['internal_ip']
 
-            # cfssl gencert \
-            #   -ca="$certs_dir"/ca.pem \
-            #   -ca-key="$certs_dir"/ca-key.pem \
-            #   -config="$certs_dir"/ca-config.json \
-            #   -hostname=${INSTANCE_HOSTNAME},${EXTERNAL_IP},${INTERNAL_IP} \
-            #   -profile=kubernetes \
-            #   "$certs_dir"/${instance}-csr.json | cfssljson -bare ${instance}
+            p1 = subprocess.Popen([
+                'cfssl', 'gencert',
+                '-ca={}/ca.pem'.format(certs_path),
+                '-ca-key={}/ca-key.pem'.format(certs_path),
+                '-config={}/ca-config.json'.format(certs_path),
+                '-hostname={},{},{}'.format(aws_hostname, external_ip, internal_ip),
+                '-profile=kubernetes',
+                out_file
+            ], stdout=subprocess.PIPE)
+            subprocess.Popen(['cfssljson', '-bare', name], stdin=p1.stdout)
+            p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        print()
+        print('# **** The Controller Manager Client Certificate **** #')
+        base_name = 'kube-controller-manager'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
+        print("Writing '{}'...".format(out_file))
+        with open(out_file, 'w') as stream:
+            stream.write(inspect.cleandoc(
+                '''
+                    {{
+                      "CN": "system:{base_name}",
+                      "key": {{
+                        "algo": "rsa",
+                        "size": 2048
+                      }},
+                      "names": [
+                        {{
+                          "C": "{country}",
+                          "L": "{city}",
+                          "O": "system:{base_name}",
+                          "OU": "{ou}",
+                          "ST": "{state}"
+                        }}
+                      ]
+                    }}
+                '''.format(**{**config.organization, **{'base_name': base_name}})
+            ))
+
+        p1 = subprocess.Popen([
+            'cfssl', 'gencert',
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
+            '-profile=kubernetes',
+            out_file
+        ], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        print()
+        print('# **** The Kube Proxy Client Certificate **** #')
+        base_name = 'kube-proxy'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
+        print("Writing '{}'...".format(out_file))
+        with open(out_file, 'w') as stream:
+            stream.write(inspect.cleandoc(
+                '''
+                    {{
+                      "CN": "system:{base_name}",
+                      "key": {{
+                        "algo": "rsa",
+                        "size": 2048
+                      }},
+                      "names": [
+                        {{
+                          "C": "{country}",
+                          "L": "{city}",
+                          "O": "system:node-proxier",
+                          "OU": "{ou}",
+                          "ST": "{state}"
+                        }}
+                      ]
+                    }}
+                '''.format(**{**config.organization, **{'base_name': base_name}})
+            ))
+
+        p1 = subprocess.Popen([
+            'cfssl', 'gencert',
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
+            '-profile=kubernetes',
+            out_file
+        ], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        print()
+        print('# **** The Scheduler Client Certificate **** #')
+        base_name = 'kube-scheduler'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
+        print("Writing '{}'...".format(out_file))
+        with open(out_file, 'w') as stream:
+            stream.write(inspect.cleandoc(
+                '''
+                    {{
+                      "CN": "system:{base_name}",
+                      "key": {{
+                        "algo": "rsa",
+                        "size": 2048
+                      }},
+                      "names": [
+                        {{
+                          "C": "{country}",
+                          "L": "{city}",
+                          "O": "system:{base_name}",
+                          "OU": "{ou}",
+                          "ST": "{state}"
+                        }}
+                      ]
+                    }}
+                '''.format(**{**config.organization, **{'base_name': base_name}})
+            ))
+
+        p1 = subprocess.Popen([
+            'cfssl', 'gencert',
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
+            '-profile=kubernetes',
+            out_file
+        ], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        print()
+        print('# **** The Kubernetes API Server Certificate **** #')
+        base_name = 'kubernetes'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
+        print("Writing '{}'...".format(out_file))
+        with open(out_file, 'w') as stream:
+            stream.write(inspect.cleandoc(
+                '''
+                    {{
+                      "CN": "{base_name}",
+                      "key": {{
+                        "algo": "rsa",
+                        "size": 2048
+                      }},
+                      "names": [
+                        {{
+                          "C": "{country}",
+                          "L": "{city}",
+                          "O": "{o}",
+                          "OU": "{ou}",
+                          "ST": "{state}"
+                        }}
+                      ]
+                    }}
+                '''.format(**{**config.organization, **{'base_name': base_name}})
+            ))
+
+        kubernetes_hostnames = [
+            'kubernetes',
+            'kubernetes.default',
+            'kubernetes.default.svc',
+            'kubernetes.default.svc.cluster',
+            'kubernetes.svc.cluster.local'
+        ]
+
+        hostnames = [
+            config['internal_cluster_services_ip'],
+            *config.controller_internal_ips,
+            *config.controller_aws_hostnames,
+            public_addresses['kubernetes'],
+            '127.0.0.1',
+            *kubernetes_hostnames
+        ]
+
+        p1 = subprocess.Popen([
+            'cfssl', 'gencert',
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
+            '-hostname={}'.format(','.join(hostnames)),
+            '-profile=kubernetes',
+            out_file
+        ], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+
+        print()
+        print('#### The Service Account Key Pair ####')
+        base_name = 'service-account'
+        out_file = certs_path.joinpath('{}-csr.json'.format(base_name))
+        print("Writing '{}'...".format(out_file))
+        with open(out_file, 'w') as stream:
+            stream.write(inspect.cleandoc(
+                '''
+                    {{
+                      "CN": "system:service-accounts",
+                      "key": {{
+                        "algo": "rsa",
+                        "size": 2048
+                      }},
+                      "names": [
+                        {{
+                          "C": "{country}",
+                          "L": "{city}",
+                          "O": "{o}",
+                          "OU": "{ou}",
+                          "ST": "{state}"
+                        }}
+                      ]
+                    }}
+                '''.format(**config.organization)
+            ))
+
+        p1 = subprocess.Popen([
+            'cfssl', 'gencert',
+            '-ca={}/ca.pem'.format(certs_path),
+            '-ca-key={}/ca-key.pem'.format(certs_path),
+            '-config={}/ca-config.json'.format(certs_path),
+            '-profile=kubernetes',
+            out_file
+        ], stdout=subprocess.PIPE)
+        subprocess.Popen(['cfssljson', '-bare', base_name], stdin=p1.stdout)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
 
-# Run(sys.argv[1], sys.argv[2], sys.argv[3])
+Run(sys.argv[1], sys.argv[2])

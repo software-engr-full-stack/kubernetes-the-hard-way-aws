@@ -5,6 +5,8 @@ organization:
   ou: 'Kubernetes The Hard Way - AWS'
   o: 'Kubernetes'
 
+internal_cluster_services_ip: '10.32.0.1'
+
 controllers:
   - { hostname: 'controller-0', internal_ip: '10.240.0.10', aws_hostname: 'ip-10-240-0-10' }
   # - { hostname: 'controller-1', internal_ip: '10.240.0.11', aws_hostname: 'ip-10-240-0-11' }

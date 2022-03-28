@@ -1,10 +1,6 @@
 terraform {
   required_version = ">= 1.1.5"
 
-  # backend "local" {
-  #   path = "./terraform.tfstate"
-  # }
-
   cloud {
     organization = "software-engr-full-stack"
     workspaces {
@@ -18,19 +14,19 @@ provider "aws" {
 }
 
 module "network" {
-  source = "./03-provisioning-compute-resources/01_networking"
+  source              = "./sections/03-provisioning-compute-resources/01_networking"
 
-  tag = local.tag
-  cidr_block = local.cidr_block
-  region = local.region
+  tag                 = local.tag
+  cidr_block          = local.cidr_block
+  region              = local.region
 
-  ssh_port = local.ssh_port
+  ssh_port            = local.ssh_port
   kube_apiserver_port = local.kube_apiserver_port
-  pod_cidr_block = local.pod_cidr_block
+  pod_cidr_block      = local.pod_cidr_block
 }
 
 module "compute_instances" {
-  source                     = "./03-provisioning-compute-resources/02_compute_instances"
+  source                     = "./sections/03-provisioning-compute-resources/02_compute_instances"
 
   security_groups            = [module.network.firewall.id]
   subnet_id                  = module.network.virtual_private_cloud_network.subnet.id
@@ -47,7 +43,7 @@ module "compute_instances" {
 }
 
 module "load_balancer" {
-  source                                  = "./08-bootstrapping-the-kubernetes-control-plane"
+  source                                  = "./sections/08-bootstrapping-the-kubernetes-control-plane"
 
   tag                                     = local.tag
   subnet_id                               = module.network.virtual_private_cloud_network.subnet.id
@@ -57,7 +53,7 @@ module "load_balancer" {
 }
 
 module "pod_network_routes" {
-  source = "./11-provisioning-pod-network-routes"
+  source                 = "./sections/11-provisioning-pod-network-routes"
 
   route_table            = module.network.virtual_private_cloud_network.route_table
   destination_cidr_block = local.pod_cidr_block
@@ -65,9 +61,9 @@ module "pod_network_routes" {
 }
 
 module "nginx_kubernetes_node_port" {
-  count = var.nginx_kubernetes_node_port != "" ? 1 : 0
-  source = "./13-smoke-test"
+  count                      = var.nginx_kubernetes_node_port != "" ? 1 : 0
+  source                     = "./sections/13-smoke-test"
 
   nginx_kubernetes_node_port = var.nginx_kubernetes_node_port
-  security_group_id = module.network.firewall.id
+  security_group_id          = module.network.firewall.id
 }

@@ -6,7 +6,7 @@ import json
 
 
 class PublicAddresses(object):
-    def __init__(self, name, hostnames):
+    def __init__(self, hostnames, name=None):
         if len(hostnames) < 1:
             raise ValueError('... ERROR: must pass at least 1 hostname')
 
@@ -32,19 +32,25 @@ class PublicAddresses(object):
                     )
                 )
 
-        result = subprocess.run([
-            'aws', 'ec2', 'describe-addresses',
-            '--filter',
-            'Name=tag:Name,Values={}'.format(name),
-            '--query', 'Addresses[0].PublicIp',
-            '--output', 'text'
-        ], stdout=subprocess.PIPE)
+        kubernetes_public_ip = {}
+        if name:
+            result = subprocess.run([
+                'aws', 'ec2', 'describe-addresses',
+                '--filter',
+                'Name=tag:Name,Values={}'.format(name),
+                '--query', 'Addresses[0].PublicIp',
+                '--output', 'text'
+            ], stdout=subprocess.PIPE)
 
-        public_ip = result.stdout.decode('utf-8').strip()
-        if public_ip.strip() == '' or public_ip == 'None':
-            raise ValueError("... ERROR: public IP for '{}' not found".format(name))
+            public_ip = result.stdout.decode('utf-8').strip()
+            if public_ip.strip() == '' or public_ip == 'None':
+                raise ValueError("... ERROR: public IP for '{}' not found".format(name))
 
-        self.__data = {**data, 'kubernetes': public_ip}
+            kubernetes_public_ip = {'kubernetes': public_ip}
+
+        self.__data = {**data, **kubernetes_public_ip}
+
+        self.all = self.__data.values()
 
     def __getitem__(self, key):
         if key not in self.__data:

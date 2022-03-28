@@ -8,25 +8,24 @@ _main_app_dir := ${_main_dir}
 _main_config_file := ${_main_dir}/config.yml
 
 _main_secrets_dir := $(abspath ${_main_app_dir}/secrets)
-
-_main_certs_dir := ${_main_secrets_dir}/test-certs
-_main_auto_gen_config_dir := ${_main_secrets_dir}/config-auto-gen
 _main_key_pair_file := ${_main_secrets_dir}/${name}.ed25519
 
-_main_hostnames := controller-0 worker-0
-# _main_hostnames := controller-0 controller-1 controller-2 worker-0 worker-1 worker-2
+_main_sections_dir := ${_main_dir}/sections
+
+_main_inventory_file := /tmp/${name}/ubuntu-focal_aws.inventory
 
 debug:
-	"${_main_app_dir}/build.py" ${_main_hostnames}
+	"${_main_app_dir}/lib/create_inventory_file.py" \
+		--config-file "${_main_config_file}" \
+		--host-type 'controller' \
+		--inventory-file "${_main_inventory_file}"
 
-# 	"${_main_app_dir}/lib/public_addresses.py" ${_main_hostnames}
-
-# build:
-# 	cd "${_main_dir}" && \
-# 	"${_main_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
-# 		"${_main_certs_dir}" \
-# 		"${_main_config_file}" \
-# 		"${_main_app_dir}/lib/public_addresses.py" ${_main_hostnames}
+# debug:
+# 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
+# 		"${name}" \
+# 		"${_main_config_file}" && \
+# 	"${_main_app_dir}/lib/create_inventory_file.py" \
+# 		--inventory-file "${__main_inventory_file}"
 
 # build: delete-key-pair key-pair
 # 	cd "${_main_dir}" && \
