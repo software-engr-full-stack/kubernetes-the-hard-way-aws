@@ -1,17 +1,10 @@
 variable "instance_workers" {
-  type = list(object({
-    primary_network_interface_id = string
-    private_ip = string
-  }))
-}
-
-locals {
-  workers_map = {
-    for item in var.instance_workers: item.private_ip => item
-  }
+  # TODO: put more specific type
+  type = any
 }
 
 variable "route_table" {
+  # TODO: put more specific type
   type = any
 }
 
@@ -25,6 +18,10 @@ resource "aws_route" "kube" {
 
   depends_on             = [var.route_table]
 
-  for_each               = local.workers_map
+  for_each               = var.instance_workers
   network_interface_id   = each.value.primary_network_interface_id
+}
+
+output "DEBUG" {
+  value = var.instance_workers
 }

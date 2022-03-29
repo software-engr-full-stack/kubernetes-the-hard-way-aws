@@ -7,12 +7,44 @@ organization:
 
 internal_cluster_services_ip: '10.32.0.1'
 
+aws:
+  region: 'us-west-1'
+
+network:
+  cidr_block: '10.240.0.0/24'
+  pod_cidr_block: '10.200.0.0/16'
+
 controllers:
-  - { hostname: 'controller-0', internal_ip: '10.240.0.10', aws_hostname: 'ip-10-240-0-10' }
-  # - { hostname: 'controller-1', internal_ip: '10.240.0.11', aws_hostname: 'ip-10-240-0-11' }
-  # - { hostname: 'controller-2', internal_ip: '10.240.0.12', aws_hostname: 'ip-10-240-0-12' }
+  - hostname: 'controller-0'
+    internal_ip: '10.240.0.10'
+    aws_hostname: 'ip-10-240-0-10'
+    instance_type: 't2.micro'
+
+  # - hostname: 'controller-1'
+  #   internal_ip: '10.240.0.11'
+  #   aws_hostname: 'ip-10-240-0-11'
+  #   instance_type: 't2.micro'
+
+  # - hostname: 'controller-2'
+  #   internal_ip: '10.240.0.12'
+  #   aws_hostname: 'ip-10-240-0-12'
+  #   instance_type: 't2.micro'
 
 workers:
-  - { hostname: 'worker-0', internal_ip: '10.240.0.20', aws_hostname: 'ip-10-240-0-20' }
-  # - { hostname: 'worker-1', internal_ip: '10.240.0.21', aws_hostname: 'ip-10-240-0-21' }
-  # - { hostname: 'worker-2', internal_ip: '10.240.0.22', aws_hostname: 'ip-10-240-0-22' }
+  - hostname: 'worker-0'
+    internal_ip: '10.240.0.20'
+    aws_hostname: 'ip-10-240-0-20'
+    instance_type: 't2.micro'
+    pod_cidr: '10.200.0.0/24'
+
+  # - hostname: 'worker-1'
+  #   internal_ip: '10.240.0.21'
+  #   aws_hostname: 'ip-10-240-0-21'
+  #   instance_type: 't2.micro'
+  #   pod_cidr: '10.200.1.0/24'
+
+  # - hostname: 'worker-2'
+  #   internal_ip: '10.240.0.22'
+  #   aws_hostname: 'ip-10-240-0-22'
+  #   instance_type: 't2.micro'
+  #   pod_cidr: '10.200.2.0/24'

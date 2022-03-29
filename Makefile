@@ -32,6 +32,9 @@ ansible:
 		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml" \
 
 debug:
+	"${_main_sections_dir}/03-provisioning-compute-resources/run.sh" "${name}"
+
+new-build:
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
 		"${name}" \
 		"${_main_config_file}" \
@@ -42,6 +45,7 @@ reset:
 
 # build: delete-key-pair key-pair
 # 	cd "${_main_dir}" && \
+#   terraform init && \
 # 	terraform apply -auto-approve && \
 # 	"${_main_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.sh" && \
 # 	"${_main_dir}/05-generating-kubernetes-configuration-files-for-authentication/run.sh" && \

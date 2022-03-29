@@ -1,7 +1,5 @@
 resource "aws_eip" "kube" {
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
   vpc = true
 }
 

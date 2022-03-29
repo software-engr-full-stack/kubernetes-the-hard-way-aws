@@ -1,7 +1,11 @@
-variable "tag" {
+variable "name" {
+  type = string
+}
+
+variable "base_tag" {
   type = object({
-      value = string
-    })
+    Name = string
+  })
 }
 
 variable "subnet_id" {
@@ -17,13 +21,12 @@ variable "vpc_id" {
 }
 
 variable "instance_controllers" {
-  type = list(object({
-    private_ip = string
-  }))
+  # TODO: put more specific type
+  type = any
 }
 
 resource "aws_lb" "kube" {
-  name = var.tag.value
+  name = var.name
 
   subnet_mapping {
     subnet_id     = var.subnet_id
@@ -32,13 +35,11 @@ resource "aws_lb" "kube" {
 
   load_balancer_type = "network"
 
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }
 
 resource "aws_lb_target_group" "kube" {
-  name        = var.tag.value
+  name        = var.name
   protocol    = "TCP"
   port        = 6443
   vpc_id      = var.vpc_id
@@ -50,21 +51,13 @@ resource "aws_lb_target_group" "kube" {
     path     = "/healthz"
   }
 
-  tags = {
-    Name = var.tag.value
-  }
-}
-
-locals {
-  controllers_map = {
-    for item in var.instance_controllers: item.private_ip => item
-  }
+  tags = var.base_tag
 }
 
 resource "aws_lb_target_group_attachment" "kube" {
   target_group_arn = aws_lb_target_group.kube.arn
 
-  for_each         = local.controllers_map
+  for_each         = var.instance_controllers
   target_id        = each.key
 }
 
@@ -78,7 +71,5 @@ resource "aws_lb_listener" "kube" {
     target_group_arn = aws_lb_target_group.kube.arn
   }
 
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }

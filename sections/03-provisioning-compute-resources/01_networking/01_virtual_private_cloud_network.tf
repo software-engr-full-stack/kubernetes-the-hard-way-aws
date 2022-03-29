@@ -8,34 +8,24 @@ resource "aws_vpc" "kube" {
   enable_dns_support = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }
 
 resource "aws_subnet" "kube" {
   vpc_id = aws_vpc.kube.id
   cidr_block = var.cidr_block
   availability_zone = format("%s%s", var.region, "a")
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }
 
 resource "aws_internet_gateway" "kube" {
   vpc_id = aws_vpc.kube.id
-
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }
 
 resource "aws_route_table" "kube" {
   vpc_id = aws_vpc.kube.id
-
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 }
 
 resource "aws_route_table_association" "kube" {

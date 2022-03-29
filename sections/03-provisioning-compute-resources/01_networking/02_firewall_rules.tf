@@ -12,12 +12,10 @@ variable "kube_apiserver_port" {
 
 resource "aws_security_group" "kube" {
   vpc_id = aws_vpc.kube.id
-  name = var.tag.value
+  name = var.name
   description = "Kubernetes The Hard Way - AWS: security group"
 
-  tags = {
-    Name = var.tag.value
-  }
+  tags = var.base_tag
 
   ingress {
     from_port   = 0

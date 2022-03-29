@@ -1,4 +1,8 @@
+#!/usr/bin/env python3
+
+import argparse
 import yaml
+import json
 
 
 class Config(object):
@@ -26,14 +30,59 @@ class Config(object):
 
         self.all_hostnames = [*self.controller_hostnames, *self.worker_hostnames]
 
-        self.__data = data
+        self.data = data
 
     def __getitem__(self, key):
-        if key not in self.__data:
+        if key not in self.data:
             raise ValueError(
                 "... ERROR: config key '{}' not in config table...\n{}".format(
                     key,
-                    self.__data
+                    self.data
                 )
             )
-        return self.__data[key]
+        return self.data[key]
+
+    def list_to_dict(self, list, key='internal_ip'):
+        return {item[key]: item for item in list}
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Config')
+
+    parser.add_argument(
+        '-c', '--config-file',
+        dest='config_file',
+        required=True,
+        help='the config file'
+    )
+
+    parser.add_argument(
+        '-t', '--key',
+        dest='key',
+        help='the key for the config data'
+    )
+
+    default_output_type = 'json'
+    parser.add_argument(
+        '-o', '--output-type',
+        dest='output_type',
+        default='json',
+        help='output type: default "{}"'.format(default_output_type)
+    )
+
+    parser.add_argument(
+        '-s', '--shape',
+        dest='shape',
+        default='None => list',
+        help='data shape whether list or dictionary'
+    )
+
+    args = parser.parse_args()
+
+    config = Config(args.config_file)
+
+    output = config[args.key] if args.key else config
+    shaped = config.list_to_dict(output) if args.shape == 'dict' else output
+    fmatted = json.dumps(shaped) if args.output_type == default_output_type else shaped
+
+    print(fmatted)
