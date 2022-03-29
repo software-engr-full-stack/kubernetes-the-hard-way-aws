@@ -34,7 +34,7 @@ ansible:
 _main_terraform_cmd := ${_main_sections_dir}/03-provisioning-compute-resources/run.sh
 
 plan:
-	"${_main_terraform_cmd}" "${name}" planasdf
+	"${_main_terraform_cmd}" "${name}" plan
 
 apply:
 	"${_main_terraform_cmd}" "${name}" apply
@@ -49,14 +49,20 @@ debug:
 		"${_main_key_pair_file}"
 
 new-build:
-	"${_main_sections_dir}/03-provisioning-compute-resources/run.sh" "${name}" && \
+	cd "${_main_dir}" && \
+	make apply  && \
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
 		"${name}" \
 		"${_main_config_file}" \
 		"${_main_key_pair_file}"
 
 reset:
-	rm -rf "${_main_certs_dir}"
+	cd "${_main_dir}" && \
+	rm -rf "${_main_certs_dir}" && \
+	make destroy && \
+	make delete-key-pair && \
+	make key-pair && \
+	make new-build
 
 # build: delete-key-pair key-pair
 # 	cd "${_main_dir}" && \
