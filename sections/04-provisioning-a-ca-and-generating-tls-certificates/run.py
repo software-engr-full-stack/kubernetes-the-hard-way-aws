@@ -148,9 +148,9 @@ class Run(object):
         print('# **** The Kubelet Client Certificates **** #')
 
         for host in config.workers:
-            name = host['hostname']
+            instance_name = host['hostname']
             aws_hostname = host['aws_hostname']
-            out_file = certs_path.joinpath('{}-csr.json'.format(name))
+            out_file = certs_path.joinpath('{}-csr.json'.format(instance_name))
             with open(out_file, 'w') as stream:
                 stream.write(inspect.cleandoc(
                     '''
@@ -173,7 +173,7 @@ class Run(object):
                     '''.format(**{**config.organization, **{'aws_hostname': aws_hostname}})
                 ))
 
-            external_ip = public_addresses[name]
+            external_ip = public_addresses[instance_name]
             internal_ip = host['internal_ip']
 
             p1 = subprocess.Popen([
@@ -185,7 +185,7 @@ class Run(object):
                 '-profile=kubernetes',
                 out_file
             ], stdout=subprocess.PIPE)
-            subprocess.Popen(['cfssljson', '-bare', name], stdin=p1.stdout)
+            subprocess.Popen(['cfssljson', '-bare', instance_name], stdin=p1.stdout)
             p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
         self._sync_and_delay()
