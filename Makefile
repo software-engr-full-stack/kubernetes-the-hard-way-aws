@@ -31,10 +31,25 @@ ansible:
 		--extra-vars "certs_dir=${_main_certs_dir}" \
 		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml" \
 
+_main_terraform_cmd := ${_main_sections_dir}/03-provisioning-compute-resources/run.sh
+
+plan:
+	"${_main_terraform_cmd}" "${name}" planasdf
+
+apply:
+	"${_main_terraform_cmd}" "${name}" apply
+
+destroy:
+	"${_main_terraform_cmd}" "${name}" destroy
+
 debug:
-	"${_main_sections_dir}/03-provisioning-compute-resources/run.sh" "${name}"
+	"${_main_sections_dir}/05-generating-kubernetes-configuration-files-for-authentication/run.py" \
+		"${name}" \
+		"${_main_config_file}" \
+		"${_main_key_pair_file}"
 
 new-build:
+	"${_main_sections_dir}/03-provisioning-compute-resources/run.sh" "${name}" && \
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
 		"${name}" \
 		"${_main_config_file}" \

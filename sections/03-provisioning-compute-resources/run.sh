@@ -2,6 +2,7 @@
 
 run() {
   local name="${1:?ERROR => must pass name}"
+  local op_arg="${2:?ERROR => must pass Terraform operation (plan, apply, or destroy)}"
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
   local app_dir="$this_dir/../.."
@@ -31,10 +32,19 @@ run() {
     terraform init
   fi
 
-  terraform plan -out "/tmp/$name.tf.out" "${vars[@]}"
+  declare -A op_table=(
+    [plan]="plan -out /tmp/$name.tf.out"
+    [apply]='apply -auto-approve'
+    [destroy]='destroy -auto-approve'
+  )
 
-  terraform apply "${vars[@]}"
-  # terraform apply -auto-approve "${vars[@]}"
+  local op="${op_table[$op_arg]-}"
+  if [ -z "$op" ]; then
+    printf "... ERROR: invalid Terraform op '$op_arg', valid ops...\n$(declare -p op_table)\n" >&2
+    exit 1
+  fi
+
+  terraform $op "${vars[@]}"
 }
 
 set -o errexit
