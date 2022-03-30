@@ -19,19 +19,6 @@ _main_inventory_dir := /tmp/${name}/ansible-inventory
 # TODO: DEBUG
 _main_certs_dir := ${_main_secrets_dir}/test-certs
 
-ansible:
-	"${_main_app_dir}/lib/create_inventory_file.py" \
-		--config-file "${_main_config_file}" \
-		--host-type 'controller' \
-		--inventory-file "${_main_inventory_file_workers}" && \
-	ANSIBLE_CONFIG="${_main_app_dir}/ansible.cfg" \
-	ansible-playbook \
-		--inventory-file "${_main_inventory_file_workers}" \
-		--extra-vars "ansible_ssh_private_key_file=${_main_key_pair_file}" \
-		--extra-vars "base_name=${name}" \
-		--extra-vars "certs_dir=${_main_certs_dir}" \
-		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml"
-
 _main_terraform_cmd := ${_main_sections_dir}/03-provisioning-compute-resources/run.sh
 
 plan:
