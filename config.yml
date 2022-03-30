@@ -5,6 +5,8 @@ organization:
   ou: 'Kubernetes The Hard Way - AWS'
   o: 'Kubernetes'
 
+remote_user: 'ubuntu'
+
 internal_cluster_services_ip: '10.32.0.1'
 
 kube_apiserver_port: 6443
