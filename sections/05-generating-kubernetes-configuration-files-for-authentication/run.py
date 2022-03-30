@@ -201,4 +201,4 @@ class Run(object):
         ])
 
 
-Run(sys.argv[1], sys.argv[2])
+Run(*sys.argv[1:])
