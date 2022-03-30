@@ -47,7 +47,7 @@ class Run(object):
                 '--extra-vars', 'service_cluster_ip_range={}'.format(config['network']['service_cluster_ip_range']),
                 '--extra-vars', 'pod_cidr_block={}'.format(config['network']['pod_cidr_block']),
                 '--extra-vars', 'config_auto_gen_path={}'.format(path.config_auto_gen),
-                this_file.parent.joinpath('playbook-controller.yml')
+                this_file.parent.joinpath('playbook-controller-1.yml')
             ], env=env)
 
 

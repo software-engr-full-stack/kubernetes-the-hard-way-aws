@@ -301,10 +301,3 @@
         playbook_title:
         kube_binaries:
         kube_services:
-
-  handlers:
-  - name: restart-ssh
-    become: yes
-    service:
-      name: ssh
-      state: restarted
