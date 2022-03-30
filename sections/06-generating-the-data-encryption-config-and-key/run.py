@@ -4,6 +4,7 @@ import sys
 import pathlib
 import os
 import inspect
+import base64
 from cryptography.fernet import Fernet
 
 this_file = pathlib.Path((inspect.getfile(inspect.currentframe())))
@@ -16,7 +17,7 @@ from lib.path import Path  # noqa: E402
 class Run(object):
     def __init__(self):
         # head -c 32 /dev/urandom | base64
-        encryption_key = Fernet.generate_key().decode('utf-8')[:32]
+        encryption_key = base64.b64encode(Fernet.generate_key())[:32].decode('utf-8')
         path = Path()
 
         config_auto_gen_path = path.config_auto_gen
