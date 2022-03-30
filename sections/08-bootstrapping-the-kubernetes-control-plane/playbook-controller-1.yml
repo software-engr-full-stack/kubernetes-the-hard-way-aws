@@ -21,7 +21,7 @@
           - 'kube-controller-manager'
           - 'kube-scheduler'
 
-    - name: '{{ playbook_title }}: create {{ item }} dir'
+    - name: '{{ playbook_title }}: create dir'
       become: yes
       ansible.builtin.file:
         path: '{{ item }}'
@@ -29,14 +29,15 @@
       loop:
         - '/etc/kubernetes/config'
 
-    - name: '{{ playbook_title }}: download {{ item }} binary'
+    - name: '{{ playbook_title }}: download binary'
+      become: yes
       get_url:
         url: 'https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/{{ item }}'
         dest: '/usr/local/bin/{{ item }}'
         mode: '0755'
       loop: '{{ kube_binaries }}'
 
-    - name: '{{ playbook_title }}: configure the Kubernetes API server, create {{ item }} dir'
+    - name: '{{ playbook_title }}: configure the Kubernetes API server, create dir'
       become: yes
       ansible.builtin.file:
         path: '{{ item }}'
@@ -191,7 +192,7 @@
           [Install]
           WantedBy=multi-user.target
 
-    - name: '{{ playbook_title }}: {{ item }} Kubernetes services'
+    - name: '{{ playbook_title }}: set up Kubernetes services'
       become: yes
       ansible.builtin.command:
         argv: "{{ ['/usr/bin/systemctl', item] + kube_services }}"
@@ -231,7 +232,7 @@
         force: yes
         state: link
 
-    - name: '{{ playbook_title }}: enable HTTP health checks, {{ item }} nginx'
+    - name: '{{ playbook_title }}: enable HTTP health checks, set up nginx service'
       become: yes
       ansible.builtin.command:
         argv:
@@ -243,7 +244,7 @@
         - enable
         - start
 
-    - name: '{{ playbook_title }}: verification cluster info, copy {{ item }}'
+    - name: '{{ playbook_title }}: verification cluster info, copy admin config'
       become: yes
       ansible.builtin.copy:
         src: '{{ config_auto_gen_path }}/{{ item }}'
