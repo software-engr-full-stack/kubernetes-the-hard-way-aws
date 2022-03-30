@@ -44,7 +44,7 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/07-bootstrapping-the-etcd-cluster/run.py" \
+	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/run.py" \
 		"${name}" \
 		"${_main_config_file}" \
 		"${_main_key_pair_file}" \
