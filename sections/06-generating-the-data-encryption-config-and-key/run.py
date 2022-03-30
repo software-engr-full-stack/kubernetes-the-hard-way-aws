@@ -15,7 +15,8 @@ from lib.path import Path  # noqa: E402
 
 class Run(object):
     def __init__(self):
-        encryption_key = Fernet.generate_key().decode('utf-8')
+        # head -c 32 /dev/urandom | base64
+        encryption_key = Fernet.generate_key().decode('utf-8')[:32]
         path = Path()
 
         config_auto_gen_path = path.config_auto_gen
