@@ -39,7 +39,6 @@ class Run(object):
                 'ansible-playbook',
                 '--inventory-file', inventory_file,
                 '--extra-vars', 'id_file={}'.format(id_file),
-                '--extra-vars', 'base_name={}'.format(name),
                 '--extra-vars', 'rem_usr={}'.format(config['remote_user']),
                 '--extra-vars', 'etcd_name={}'.format(instance_name),
                 '--extra-vars', 'internal_ip={}'.format(host['internal_ip']),
