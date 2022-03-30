@@ -17,7 +17,7 @@ from lib.path import Path  # noqa: E402
 
 
 class Run(object):
-    def __init__(self, name, config_file, id_file):
+    def __init__(self, name, config_file):
         config = Config(config_file)
 
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
@@ -31,8 +31,6 @@ class Run(object):
             return
 
         self._certs(config, public_addresses, certs_path)
-
-        self._upload(config, public_addresses, certs_path, id_file)
 
     def _sync_and_delay(self, delay=2):
         subprocess.run(['sync'])
@@ -407,54 +405,6 @@ class Run(object):
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
         self._sync_and_delay()
-
-    def _upload(self, config, public_addresses, certs_path, id_file):
-        for hname in config.worker_hostnames:
-            pub_addr = public_addresses[hname]
-
-            files = [
-                '{}/{}'.format(certs_path, bname) for bname in [
-                    'ca.pem',
-                    '{}-key.pem'.format(hname),
-                    '{}.pem'.format(hname),
-                ]
-            ]
-
-            result = subprocess.run([
-                'scp',
-                '-i', id_file,
-                '-o', 'StrictHostKeyChecking=no', '-o UserKnownHostsFile=/dev/null',
-                *files,
-                'ubuntu@{}:~/'.format(pub_addr)
-            ], stdout=subprocess.PIPE)
-            stdout = result.stdout.decode('utf-8').strip()
-            if stdout != '':
-                print(stdout)
-
-        for hname in config.controller_hostnames:
-            pub_addr = public_addresses[hname]
-
-            files = [
-                '{}/{}'.format(certs_path, bname) for bname in [
-                    'ca.pem',
-                    'ca-key.pem',
-                    'kubernetes-key.pem',
-                    'kubernetes.pem',
-                    'service-account-key.pem',
-                    'service-account.pem'
-                ]
-            ]
-
-            result = subprocess.run([
-                'scp',
-                '-i', id_file,
-                '-o', 'StrictHostKeyChecking=no', '-o UserKnownHostsFile=/dev/null',
-                *files,
-                'ubuntu@{}:~/'.format(pub_addr)
-            ], stdout=subprocess.PIPE)
-            stdout = result.stdout.decode('utf-8').strip()
-            if stdout != '':
-                print(stdout)
 
 
 Run(sys.argv[1], sys.argv[2], sys.argv[3])
