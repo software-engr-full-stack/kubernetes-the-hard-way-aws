@@ -13,8 +13,6 @@ _main_key_pair_file := ${_main_secrets_dir}/${name}.ed25519
 _main_sections_dir := ${_main_dir}/sections
 
 _main_inventory_dir := /tmp/${name}/ansible-inventory
-# _main_inventory_file_workers := /temp/current/${name}/ubuntu-focal_aws_workers.inventory
-# _main_inventory_file_controllers := /temp/current/${name}/ubuntu-focal_aws_controllers.inventory
 
 # TODO: DEBUG
 _main_certs_dir := ${_main_secrets_dir}/test-certs
