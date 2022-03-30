@@ -13,13 +13,14 @@
         playbook_title: 'Bootstrapping the etcd cluster'
         dns_servers: ['208.67.222.222', '208.67.220.220']
 
-    # # 2022/03/29: seems to be working fine without applying this.
-    # - name: "{{ playbook_title }}: VERY IMPORTANT to speeding up SSH => add hostname '{{ ansible_hostname }}' to /etc/hosts"
-    #   become: yes
-    #   ansible.builtin.lineinfile:
-    #     path: /etc/hosts
-    #     regexp: '^\s*127\.0\.0\.1\s+localhost\s*$'
-    #     line: 127.0.0.1 localhost {{ ansible_hostname }}
+    # 2022/03/29: seems to be working fine without applying this.
+    #   Enabled because speed is OK but this warning is shown when you "sudo su -": "sudo: unable to resolve host".
+    - name: "{{ playbook_title }}: VERY IMPORTANT to speeding up SSH => add hostname '{{ ansible_hostname }}' to /etc/hosts"
+      become: yes
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^\s*127\.0\.0\.1\s+localhost\s*$'
+        line: 127.0.0.1 localhost {{ ansible_hostname }}
 
     - import_tasks: '{{ custom_ansible_lib_dir }}/ssh/tasks.yml'
       vars:
