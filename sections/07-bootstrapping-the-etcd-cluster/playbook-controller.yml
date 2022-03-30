@@ -1,0 +1,192 @@
+---
+- hosts: default
+
+  remote_user: '{{ rem_usr }}'
+
+  vars:
+    ansible_ssh_private_key_file: '{{ id_file }}'
+    custom_ansible_lib_dir: '../../lib/ansible-tasks'
+
+  tasks:
+    - name: '{{ base_name }}: set facts'
+      set_fact:
+        playbook_title: '{{ base_name }}'
+        dns_servers: ['208.67.222.222', '208.67.220.220']
+
+    # # 2022/03/29: seems to be working fine without applying this.
+    # - name: "{{ playbook_title }}: VERY IMPORTANT to speeding up SSH => add hostname '{{ ansible_hostname }}' to /etc/hosts"
+    #   become: yes
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/hosts
+    #     regexp: '^\s*127\.0\.0\.1\s+localhost\s*$'
+    #     line: 127.0.0.1 localhost {{ ansible_hostname }}
+
+    - import_tasks: '{{ custom_ansible_lib_dir }}/ssh/tasks.yml'
+      vars:
+        title: '{{ playbook_title }}'
+        TODO_TEMPLATE_ssh_port: 22
+        TODO_TEMPLATE_remote_user: 'TODO-USER'
+        TODO_TEMPLATE_allow_ssh_ip: 'TODO-ALLOW-SSH-IP'
+
+    - import_tasks: '{{ custom_ansible_lib_dir }}/dns/systemd-resolved.yml'
+      vars:
+        title: '{{ playbook_title }}'
+        dns_servers_line: '{{ " ".join(dns_servers) }}'
+
+    - name: '{{ playbook_title }}: update dist'
+      become: yes
+      apt:
+        update_cache: yes
+
+    # TODO: fix, apparently the change is not permanent
+    - import_tasks: '{{ custom_ansible_lib_dir }}/dns/cache.yml'
+      vars:
+        title: '{{ playbook_title }}'
+        # dns_servers: ...
+
+    - name: '{{ playbook_title }}: install packages'
+      become: yes
+      apt:
+        pkg:
+          - tree
+          - make
+          # For becoming a non-root user
+          - acl
+          # For PostgreSQL database queries using Ansible
+          # - python3-psycopg2
+        install_recommends: no
+
+    - name: '{{ playbook_title }}: upgrade dist'
+      become: yes
+      apt:
+        upgrade: dist
+
+    - name: '{{ playbook_title }}: etcd, download source'
+      ansible.builtin.unarchive:
+        src: 'https://github.com/etcd-io/etcd/releases/download/v3.4.15/etcd-v3.4.15-linux-amd64.tar.gz'
+        dest: '/home/{{ ansible_user_id }}'
+        remote_src: yes
+
+    - name: '{{ playbook_title }}: etcd, copy to bin dest'
+      become: yes
+      ansible.builtin.copy:
+        src: '/home/{{ ansible_user_id }}/etcd-v3.4.15-linux-amd64/{{ item }}'
+        dest: '/usr/local/bin'
+        remote_src: yes
+        mode: '0755'
+      loop:
+        - 'etcd'
+        - 'etcdctl'
+
+    - name: '{{ playbook_title }}: etcd, create /etc directory'
+      become: yes
+      ansible.builtin.file:
+        path: '/etc/etcd'
+        state: directory
+
+    - name: '{{ playbook_title }}: etcd, create /var/lib directory'
+      become: yes
+      ansible.builtin.file:
+        path: '/var/lib/etcd'
+        state: directory
+        mode: '0700'
+
+    - name: '{{ playbook_title }}: etcd, copy PEM files'
+      become: yes
+      ansible.builtin.copy:
+        src: '{{ certs_path }}/{{ item }}'
+        dest: '/etc/etcd/'
+      loop:
+        - ca.pem
+        - kubernetes-key.pem
+        - kubernetes.pem
+
+    - name: '{{ playbook_title }}: etcd, create systemd service file'
+      become: yes
+      ansible.builtin.copy:
+        dest: '/etc/systemd/system/etcd.service'
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=etcd
+          Documentation=https://github.com/coreos
+
+          [Service]
+          Type=notify
+          ExecStart=/usr/local/bin/etcd \
+            --name {{ etcd_name }} \
+            --cert-file=/etc/etcd/kubernetes.pem \
+            --key-file=/etc/etcd/kubernetes-key.pem \
+            --peer-cert-file=/etc/etcd/kubernetes.pem \
+            --peer-key-file=/etc/etcd/kubernetes-key.pem \
+            --trusted-ca-file=/etc/etcd/ca.pem \
+            --peer-trusted-ca-file=/etc/etcd/ca.pem \
+            --peer-client-cert-auth \
+            --client-cert-auth \
+            --initial-advertise-peer-urls https://{{ internal_ip }}:2380 \
+            --listen-peer-urls https://{{ internal_ip }}:2380 \
+            --listen-client-urls https://{{ internal_ip }}:2379,https://127.0.0.1:2379 \
+            --advertise-client-urls https://{{ internal_ip }}:2379 \
+            --initial-cluster-token etcd-cluster-0 \
+            --initial-cluster {{ etcd_name }}=https://{{ internal_ip }}:2380 \
+            --initial-cluster-state new \
+            --data-dir=/var/lib/etcd
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: '{{ playbook_title }}: etcd, daemon reload'
+      become: yes
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/systemctl
+          - daemon-reload
+      # when: TODO => service file is changed
+
+    - name: '{{ playbook_title }}: etcd, {{ item }} service'
+      become: yes
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/systemctl
+          - '{{ item }}'
+          - etcd.service
+      loop:
+        - stop
+        - enable
+        - start
+
+    - name: '{{ playbook_title }}: etcd, verification, command'
+      become: yes
+      ansible.builtin.command:
+        argv:
+          - etcdctl
+          - member
+          - list
+          - --endpoints=https://127.0.0.1:2379
+          - --cacert=/etc/etcd/ca.pem
+          - --cert=/etc/etcd/kubernetes.pem
+          - --key=/etc/etcd/kubernetes-key.pem
+      environment:
+        ETCDCTL_API: 3
+      register: result
+
+    - name: '{{ playbook_title }}: etcd, verification, result'
+      debug:
+        msg: '{{ result.stdout }}'
+
+    - debug:
+        msg: '... expected output: "f98dc20bce6225a0, started, controller-0, https://10.240.0.10:2380, https://10.240.0.10:2379, false"'
+
+    - name: '{{ playbook_title }}: unset facts'
+      set_fact:
+        playbook_title:
+        dns_servers:
+
+  handlers:
+  - name: restart-ssh
+    become: yes
+    service:
+      name: ssh
+      state: restarted
