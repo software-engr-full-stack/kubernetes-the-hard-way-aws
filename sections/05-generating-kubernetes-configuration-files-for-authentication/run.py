@@ -33,7 +33,7 @@ class Run(object):
         os.chdir(config_auto_gen_path)
 
         ca_file = '{}/ca.pem'.format(certs_path)
-        kube_apiserver_port = config['kube_apiserver_port']
+        kube_apiserver_port = config['network']['kube_apiserver_port']
         kube_apiserver = 'https://{}:{}'.format(
             kubernetes_public_address,
             kube_apiserver_port

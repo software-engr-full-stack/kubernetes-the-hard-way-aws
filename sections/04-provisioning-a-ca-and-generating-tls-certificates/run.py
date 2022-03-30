@@ -344,7 +344,7 @@ class Run(object):
         ]
 
         hostnames = [
-            config['internal_cluster_services_ip'],
+            config['network']['internal_cluster_services_ip'],
             *config.controller_internal_ips,
             *config.controller_aws_hostnames,
             public_addresses['kubernetes'],

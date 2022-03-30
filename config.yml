@@ -7,16 +7,16 @@ organization:
 
 remote_user: 'ubuntu'
 
-internal_cluster_services_ip: '10.32.0.1'
-
 kube_apiserver_port: 6443
 
 aws:
   region: 'us-west-1'
 
 network:
-  cidr_block: '10.240.0.0/24'
-  pod_cidr_block: '10.200.0.0/16'
+  cidr_block:                   '10.240.0.0/24'
+  pod_cidr_block:               '10.200.0.0/16'
+  service_cluster_ip_range:     '10.32.0.0/24'
+  internal_cluster_services_ip: '10.32.0.1'
 
 controllers:
   - hostname: 'controller-0'
