@@ -5,7 +5,6 @@ import pathlib
 import os
 import inspect
 import subprocess
-import time
 
 this_file = pathlib.Path((inspect.getfile(inspect.currentframe())))
 app_dir = this_file.joinpath('..', '..', '..').resolve()
