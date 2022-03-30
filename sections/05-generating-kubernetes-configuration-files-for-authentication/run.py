@@ -16,7 +16,7 @@ from lib.path import Path  # noqa: E402
 
 
 class Run(object):
-    def __init__(self, name, config_file, id_file):
+    def __init__(self, name, config_file):
         config = Config(config_file)
 
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
@@ -201,4 +201,4 @@ class Run(object):
         ])
 
 
-Run(sys.argv[1], sys.argv[2], sys.argv[3])
+Run(sys.argv[1], sys.argv[2])
