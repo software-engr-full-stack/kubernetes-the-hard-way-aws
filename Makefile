@@ -12,8 +12,9 @@ _main_key_pair_file := ${_main_secrets_dir}/${name}.ed25519
 
 _main_sections_dir := ${_main_dir}/sections
 
-_main_inventory_file_workers := /temp/current/${name}/ubuntu-focal_aws_workers.inventory
-_main_inventory_file_controllers := /temp/current/${name}/ubuntu-focal_aws_controllers.inventory
+_main_inventory_dir := /tmp/${name}/ansible-inventory
+# _main_inventory_file_workers := /temp/current/${name}/ubuntu-focal_aws_workers.inventory
+# _main_inventory_file_controllers := /temp/current/${name}/ubuntu-focal_aws_controllers.inventory
 
 # TODO: DEBUG
 _main_certs_dir := ${_main_secrets_dir}/test-certs
@@ -21,7 +22,7 @@ _main_certs_dir := ${_main_secrets_dir}/test-certs
 ansible:
 	"${_main_app_dir}/lib/create_inventory_file.py" \
 		--config-file "${_main_config_file}" \
-		--host-type 'worker' \
+		--host-type 'controller' \
 		--inventory-file "${_main_inventory_file_workers}" && \
 	ANSIBLE_CONFIG="${_main_app_dir}/ansible.cfg" \
 	ansible-playbook \
@@ -29,7 +30,7 @@ ansible:
 		--extra-vars "ansible_ssh_private_key_file=${_main_key_pair_file}" \
 		--extra-vars "base_name=${name}" \
 		--extra-vars "certs_dir=${_main_certs_dir}" \
-		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml" \
+		"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/playbook-workers.yml"
 
 _main_terraform_cmd := ${_main_sections_dir}/03-provisioning-compute-resources/run.sh
 
@@ -43,18 +44,27 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/05-generating-kubernetes-configuration-files-for-authentication/run.py" \
+	"${_main_sections_dir}/07-bootstrapping-the-etcd-cluster/run.py" \
 		"${name}" \
 		"${_main_config_file}" \
-		"${_main_key_pair_file}"
+		"${_main_key_pair_file}" \
+		"${_main_inventory_dir}"
 
 new-build:
 	cd "${_main_dir}" && \
 	make apply  && \
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
 		"${name}" \
+		"${_main_config_file}" && \
+	"${_main_sections_dir}/05-generating-kubernetes-configuration-files-for-authentication/run.py" \
+		"${name}" \
+		"${_main_config_file}" && \
+	"${_main_sections_dir}/06-generating-the-data-encryption-config-and-key/run.py" && \
+	"${_main_sections_dir}/07-bootstrapping-the-etcd-cluster/run.py" \
+		"${name}" \
 		"${_main_config_file}" \
-		"${_main_key_pair_file}"
+		"${_main_key_pair_file}" \
+		"${_main_inventory_dir}"
 
 reset:
 	cd "${_main_dir}" && \
