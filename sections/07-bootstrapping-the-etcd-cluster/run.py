@@ -25,18 +25,6 @@ class Run(object):
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
         path = Path()
 
-        # certs_path = path.certs
-        # certs_path.mkdir(parents=True, exist_ok=True)
-
-        # config_auto_gen_path = path.config_auto_gen
-        # config_auto_gen_path.mkdir(parents=True, exist_ok=True)
-
-        # kubernetes_public_address = public_addresses['kubernetes']
-
-        # os.chdir(config_auto_gen_path)
-
-        # print(path.app)
-
         env = os.environ.copy()
         env['ANSIBLE_CONFIG'] = path.app.joinpath('ansible.cfg')
 
