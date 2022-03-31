@@ -1,0 +1,46 @@
+# 2022/03/29: seems to be working fine without applying this.
+#   Enabled because speed is OK but this warning is shown when you "sudo su -": "sudo: unable to resolve host".
+- name: "{{ playbook_title }}: VERY IMPORTANT to speeding up SSH => add hostname '{{ ansible_hostname }}' to /etc/hosts"
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^\s*127\.0\.0\.1\s+localhost\s*$'
+    line: 127.0.0.1 localhost {{ ansible_hostname }}
+
+- import_tasks: './ssh/tasks.yml'
+  vars:
+    title: '{{ playbook_title }}'
+    TODO_TEMPLATE_ssh_port: 22
+    TODO_TEMPLATE_remote_user: 'TODO-USER'
+    TODO_TEMPLATE_allow_ssh_ip: 'TODO-ALLOW-SSH-IP'
+
+- import_tasks: './dns/systemd-resolved.yml'
+  vars:
+    title: '{{ playbook_title }}'
+    dns_servers_line: '{{ " ".join(dns_servers) }}'
+
+- name: '{{ playbook_title }}: update dist'
+  become: yes
+  apt:
+    update_cache: yes
+
+# TODO: fix, apparently the change is not permanent
+- import_tasks: './dns/cache.yml'
+  vars:
+    title: '{{ playbook_title }}'
+    # dns_servers: ...
+
+- name: '{{ playbook_title }}: install packages'
+  become: yes
+  apt:
+    pkg:
+      - tree
+      - make
+      # For becoming a non-root user
+      - acl
+    install_recommends: no
+
+- name: '{{ playbook_title }}: upgrade dist'
+  become: yes
+  apt:
+    upgrade: dist
