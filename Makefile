@@ -34,7 +34,7 @@ debug:
 		"${_main_config_file}" \
 		"${_main_key_pair_file}"
 
-new-build:
+build:
 	cd "${_main_dir}" && \
 	make apply  && \
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" \
@@ -65,7 +65,7 @@ new-build:
 	"${_main_sections_dir}/10-configuring-kubectl-for-remote-access/run.py" \
 		"${name}" \
 		"${_main_config_file}" && \
-	"${_main_dir}/11-provisioning-pod-network-routes/02-verification.sh" && \
+	"${_main_sections_dir}/11-provisioning-pod-network-routes/02-verification.sh" && \
 	"${_main_sections_dir}/12-deploying-the-dns-cluster-add-on/01-run-cm.py" \
 		"${name}" \
 		"${_main_config_file}" \
@@ -79,7 +79,7 @@ reset:
 	make destroy && \
 	make delete-key-pair && \
 	make key-pair && \
-	make new-build
+	make build
 
 # build: delete-key-pair key-pair
 # 	cd "${_main_dir}" && \
