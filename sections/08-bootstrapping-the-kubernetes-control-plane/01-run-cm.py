@@ -18,13 +18,18 @@ from lib.path import Path  # noqa: E402
 
 # TODO: remove {{ item }} in titles
 class Run(object):
-    def __init__(self, name, config_file, id_file, inventory_dir):
-        config = Config(config_file)
+    def __init__(self):
+        config = Config(app_dir.joinpath('config.yml'))
+
+        name = config['name']
+        inventory_dir = config['inventory_dir']
 
         inventory_path = pathlib.Path(inventory_dir).resolve()
 
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
         path = Path()
+
+        id_file = path.secrets.joinpath(config['id_file_bname'])
 
         env = os.environ.copy()
         env['ANSIBLE_CONFIG'] = path.app.joinpath('ansible.cfg')
@@ -70,4 +75,4 @@ class Run(object):
                 raise ValueError("... ERROR: sub process return code '{}' != 0".format(result.returncode))
 
 
-Run(*sys.argv[1:])
+Run()

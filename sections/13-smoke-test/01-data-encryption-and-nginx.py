@@ -12,17 +12,22 @@ sys.path.insert(0, app_dir.as_posix())
 
 from lib.config import Config  # noqa: E402
 from lib.public_addresses import PublicAddresses  # noqa: E402
+from lib.path import Path  # noqa: E402
 
 
 class Run(object):
-    def __init__(self, name, config_file, id_file):
-        DataEncryption(name, config_file, id_file)
+    def __init__(self):
+        DataEncryption()
         Deployments()
 
 
 class DataEncryption(object):
-    def __init__(self, name, config_file, id_file):
+    def __init__(self):
         print('**** Data Encryption ****')
+
+        config = Config(app_dir.joinpath('config.yml'))
+
+        name = config['name']
 
         if not self.__secret_exists(name):
             result = subprocess.run([
@@ -33,9 +38,10 @@ class DataEncryption(object):
             if result.returncode != 0:
                 raise ValueError("... ERROR: sub process return code '{}' != 0".format(result.returncode))
 
-        config = Config(config_file)
-
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
+        path = Path()
+
+        id_file = path.secrets.joinpath(config['id_file_bname'])
 
         host = config.controllers[0]
         instance_name = host['hostname']
@@ -131,4 +137,4 @@ class Deployments(object):
         raise ValueError("... ERROR: sub process return code '{}' not == to 0 or 1".format(returncode))
 
 
-Run(*sys.argv[1:])
+Run()

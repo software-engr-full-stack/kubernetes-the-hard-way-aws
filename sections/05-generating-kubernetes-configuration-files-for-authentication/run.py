@@ -16,8 +16,10 @@ from lib.path import Path  # noqa: E402
 
 
 class Run(object):
-    def __init__(self, name, config_file):
-        config = Config(config_file)
+    def __init__(self):
+        config = Config(app_dir.joinpath('config.yml'))
+
+        name = config['name']
 
         public_addresses = PublicAddresses(config.all_hostnames, name=name)
         path = Path()
@@ -201,4 +203,4 @@ class Run(object):
         ])
 
 
-Run(*sys.argv[1:])
+Run()

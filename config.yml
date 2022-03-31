@@ -1,4 +1,7 @@
-name: 'kubernetes-the-hard-way-aws'
+name:               'kubernetes-the-hard-way-aws'
+inventory_dir: '/tmp/kubernetes-the-hard-way-aws/ansible-inventory'
+id_file_bname:      'kubernetes-the-hard-way-aws.ed25519'
+id_file_ktype:                                  'ed25519'
 
 organization:
   country: 'US'

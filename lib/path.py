@@ -10,5 +10,5 @@ class Path(object):
         self.app = app_dir
         self.secrets = app_dir.joinpath('secrets')
 
-        self.certs = self.secrets.joinpath('test-certs')
-        self.config_auto_gen = self.secrets.joinpath('test-config-auto-gen')
+        self.certs = self.secrets.joinpath('certs')
+        self.config_auto_gen = self.secrets.joinpath('config-auto-gen')
