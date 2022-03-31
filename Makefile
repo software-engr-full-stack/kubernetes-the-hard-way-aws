@@ -71,7 +71,11 @@ build:
 		"${_main_config_file}" \
 		"${_main_key_pair_file}" \
 		"${_main_inventory_dir}" && \
-	"${_main_sections_dir}/12-deploying-the-dns-cluster-add-on/02-run.sh"
+	"${_main_sections_dir}/12-deploying-the-dns-cluster-add-on/02-run.sh" && \
+	"${_main_sections_dir}/13-smoke-test/01-data-encryption-and-nginx.py" \
+		"${name}" \
+		"${_main_config_file}" \
+		"${_main_key_pair_file}"
 
 reset:
 	cd "${_main_dir}" && \

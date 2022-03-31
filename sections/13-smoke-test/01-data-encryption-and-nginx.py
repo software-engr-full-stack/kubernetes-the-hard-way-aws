@@ -12,7 +12,6 @@ sys.path.insert(0, app_dir.as_posix())
 
 from lib.config import Config  # noqa: E402
 from lib.public_addresses import PublicAddresses  # noqa: E402
-from lib.path import Path  # noqa: E402
 
 
 class Run(object):
@@ -26,7 +25,6 @@ class DataEncryption(object):
         print('**** Data Encryption ****')
 
         if not self.__secret_exists(name):
-            self.__create_secret(name)
             result = subprocess.run([
                 'kubectl', 'create', 'secret', 'generic', name,
                 '--from-literal=mykey=mydata'
