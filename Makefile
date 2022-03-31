@@ -29,7 +29,7 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" "${name}"
+	"${_main_sections_dir}/13-smoke-test/09-curl-nginx-test.py"
 
 build:
 	cd "${_main_dir}" && \
@@ -76,7 +76,8 @@ build:
 	"${_main_sections_dir}/13-smoke-test/02-port-forward-localhost-curl-test.py" && \
 	"${_main_sections_dir}/13-smoke-test/03-logs-and-exec.py" && \
 	"${_main_sections_dir}/13-smoke-test/04-create-nginx-service.py" && \
-	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" "${name}"
+	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" "${name}" && \
+	"${_main_sections_dir}/13-smoke-test/09-curl-nginx-test.py"
 
 reset:
 	cd "${_main_dir}" && \
@@ -85,43 +86,6 @@ reset:
 	make delete-key-pair && \
 	make key-pair && \
 	make build
-
-# build: delete-key-pair key-pair
-# 	cd "${_main_dir}" && \
-#   terraform init && \
-# 	terraform apply -auto-approve && \
-# 	"${_main_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.sh" && \
-# 	"${_main_dir}/05-generating-kubernetes-configuration-files-for-authentication/run.sh" && \
-# 	"${_main_dir}/06-generating-the-data-encryption-config-and-key/run.sh" && \
-# 	sync && \
-# 	sleep 5 && \
-# 	"${_main_dir}/07-bootstrapping-the-etcd-cluster/run.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/08-bootstrapping-the-kubernetes-control-plane/01-run.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/08-bootstrapping-the-kubernetes-control-plane/03-the-kubernetes-frontend-load-balancer_verification.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/09-bootstrapping-the-kubernetes-worker-nodes/01-run.sh" && \
-# 	sleep 5 && \
-# 	"${_main_dir}/09-bootstrapping-the-kubernetes-worker-nodes/02-verification-using-controller.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/10-configuring-kubectl-for-remote-access/run.sh" && \
-# 	"${_main_dir}/11-provisioning-pod-network-routes/02-verification.sh" && \
-# 	"${_main_dir}/12-deploying-the-dns-cluster-add-on/01-run.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/12-deploying-the-dns-cluster-add-on/02-run.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/01-run.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/02-port-forward-localhost-curl-test.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/03-logs-and-exec.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/04-create-nginx-service.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" && \
-# 	sleep 2 && \
-# 	"${_main_dir}/13-smoke-test/09-curl-nginx-test.sh"
 
 key-pair:
 	mkdir -p "$$(dirname "${_main_key_pair_file}")" && \
