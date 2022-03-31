@@ -17,7 +17,7 @@ _main_inventory_dir := /tmp/${name}/ansible-inventory
 # TODO: DEBUG
 _main_certs_dir := ${_main_secrets_dir}/test-certs
 
-_main_terraform_cmd := ${_main_sections_dir}/03-provisioning-compute-resources/run.sh
+_main_terraform_cmd := ${_main_app_dir}/terraform.sh
 
 plan:
 	"${_main_terraform_cmd}" "${name}" plan
@@ -29,7 +29,7 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/13-smoke-test/04-create-nginx-service.py"
+	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" "${name}"
 
 build:
 	cd "${_main_dir}" && \
@@ -75,7 +75,8 @@ build:
 		"${_main_key_pair_file}" && \
 	"${_main_sections_dir}/13-smoke-test/02-port-forward-localhost-curl-test.py" && \
 	"${_main_sections_dir}/13-smoke-test/03-logs-and-exec.py" && \
-	"${_main_sections_dir}/13-smoke-test/04-create-nginx-service.py"
+	"${_main_sections_dir}/13-smoke-test/04-create-nginx-service.py" && \
+	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh" "${name}"
 
 reset:
 	cd "${_main_dir}" && \

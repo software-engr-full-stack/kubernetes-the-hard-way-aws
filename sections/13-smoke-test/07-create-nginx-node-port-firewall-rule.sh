@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 run() {
-  echo '... TODO' >&2
-  exit 1
+  local name="${1?:ERROR => must pass name}"
 
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
@@ -11,9 +10,11 @@ run() {
 
   [ -n "$NODE_PORT" ] || exit 1
 
-  cd "$this_dir"/../../..
+  local app_dir="$this_dir/../.."
 
-  terraform apply -auto-approve -var=nginx_kubernetes_node_port="$NODE_PORT"
+  cd "$app_dir"
+
+  "$app_dir/terraform.sh" "$name" 'apply' -var=nginx_kubernetes_node_port="$NODE_PORT"
 }
 
 set -o errexit
