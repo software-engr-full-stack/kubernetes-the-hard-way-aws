@@ -15,6 +15,7 @@ network:
 
   cidr_block:                   '10.240.0.0/24'
   pod_cidr_block:               '10.200.0.0/16'
+  pod_cidr:                     '10.200.0.0/24'
   service_cluster_ip_range:     '10.32.0.0/24'
   internal_cluster_services_ip: '10.32.0.1'
 
