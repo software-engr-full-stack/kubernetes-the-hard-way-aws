@@ -29,7 +29,7 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/13-smoke-test/02-port-forward-localhost-curl-test.py"
+	"${_main_sections_dir}/13-smoke-test/03-logs-and-exec.py"
 
 build:
 	cd "${_main_dir}" && \
@@ -73,7 +73,8 @@ build:
 		"${name}" \
 		"${_main_config_file}" \
 		"${_main_key_pair_file}" && \
-	"${_main_sections_dir}/13-smoke-test/02-port-forward-localhost-curl-test.py"
+	"${_main_sections_dir}/13-smoke-test/02-port-forward-localhost-curl-test.py" && \
+	"${_main_sections_dir}/13-smoke-test/03-logs-and-exec.py"
 
 reset:
 	cd "${_main_dir}" && \
