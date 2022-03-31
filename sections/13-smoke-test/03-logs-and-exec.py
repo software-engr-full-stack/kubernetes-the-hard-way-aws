@@ -12,7 +12,7 @@ sys.path.insert(0, app_dir.as_posix())
 from lib.config import Config  # noqa: E402
 
 
-class PortForwardLocalHostCurlTest(object):
+class LogAndExec(object):
     def __init__(self):
         print('# **** Logs and Exec **** #')
 
@@ -60,4 +60,4 @@ class PortForwardLocalHostCurlTest(object):
         ))
 
 
-PortForwardLocalHostCurlTest()
+LogAndExec()
