@@ -1,0 +1,44 @@
+---
+- hosts: default
+
+  remote_user: '{{ rem_usr }}'
+
+  vars:
+    ansible_ssh_private_key_file: '{{ id_file }}'
+
+  tasks:
+    - name: 'Fix DNS/NAT Issue: set facts'
+      set_fact:
+        playbook_title: 'Fix DNS/NAT Issue'
+
+    - name: '{{ playbook_title }}: modprobe...'
+      become: yes
+      ansible.builtin.command:
+        argv:
+          - modprobe
+          - br_netfilter
+
+    - name: '{{ playbook_title }}: sysctl...'
+      become: yes
+      ansible.builtin.command:
+        argv:
+          - sysctl
+          - net.bridge.bridge-nf-call-iptables=1
+
+    - name: '{{ playbook_title }}: create sysctl file'
+      become: yes
+      ansible.builtin.copy:
+        dest: '/etc/sysctl.d/90-{{ app_name }}.conf'
+        mode: '0644'
+        content: |
+          # https://github.com/kelseyhightower/kubernetes-the-hard-way/issues/662#issuecomment-989898160
+          # In case your kube-proxy configuration is okay, you might notice by tracing with IPTables that masquerading is ok on receving the packet, but see no trace of the return packet. After testing, it appears to be a generic problem on compute disks imaged with : ubuntu-2004-focal-v20211202 (not tested with other versions).
+
+          # Referring to Kubernetes issue #21613, and when your DNS and busybox pods on on the same node, you might need an additional kernel module to reverse dNAT the returning packet.
+
+          # Installation steps, think of replicating it to all workers:
+          net.bridge.bridge-nf-call-iptables = 1
+
+    - name: '{{ playbook_title }}: unset facts'
+      set_fact:
+        playbook_title:
