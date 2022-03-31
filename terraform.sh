@@ -3,9 +3,12 @@
 run() {
   local name="${1:?ERROR => must pass name}"
   local op_arg="${2:?ERROR => must pass Terraform operation (plan, apply, or destroy)}"
+  shift
+  shift
+
   local this_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-  local app_dir="$this_dir/../.."
+  local app_dir="$this_dir"
 
   cd "$app_dir"
 
@@ -28,7 +31,7 @@ run() {
     )"
   )
 
-  if ! terraform plan -out "/tmp/$name.tf.out" "${vars[@]}"; then
+  if ! terraform plan -out "/tmp/$name.tf.out" "${vars[@]}" "$@"; then
     terraform init
   fi
 
@@ -44,7 +47,7 @@ run() {
     exit 1
   fi
 
-  terraform $op "${vars[@]}"
+  terraform $op "${vars[@]}" "$@"
 }
 
 set -o errexit
