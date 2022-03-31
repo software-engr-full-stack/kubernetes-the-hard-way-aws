@@ -29,11 +29,9 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/09-bootstrapping-the-kubernetes-worker-nodes/run-cm.py" \
+	"${_main_sections_dir}/10-configuring-kubectl-for-remote-access/run.py" \
 		"${name}" \
-		"${_main_config_file}" \
-		"${_main_key_pair_file}" \
-		"${_main_inventory_dir}"
+		"${_main_config_file}"
 
 new-build:
 	cd "${_main_dir}" && \
@@ -62,7 +60,10 @@ new-build:
 		"${name}" \
 		"${_main_config_file}" \
 		"${_main_key_pair_file}" \
-		"${_main_inventory_dir}"
+		"${_main_inventory_dir}" && \
+	"${_main_sections_dir}/10-configuring-kubectl-for-remote-access/run.py" \
+		"${name}" \
+		"${_main_config_file}"
 
 reset:
 	cd "${_main_dir}" && \
