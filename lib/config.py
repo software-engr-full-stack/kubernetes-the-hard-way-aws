@@ -63,11 +63,16 @@ if __name__ == '__main__':
     )
 
     default_output_type = 'json'
+    obj_output_type = 'obj'
+    output_type_help = "valid output types: '{}' (default), '{}'".format(
+        default_output_type,
+        obj_output_type
+    )
     parser.add_argument(
         '-o', '--output-type',
         dest='output_type',
-        default='json',
-        help='output type: default "{}"'.format(default_output_type)
+        default=default_output_type,
+        help=output_type_help
     )
 
     parser.add_argument(
@@ -83,6 +88,14 @@ if __name__ == '__main__':
 
     output = config[args.key] if args.key else config
     shaped = config.list_to_dict(output) if args.shape == 'dict' else output
-    fmatted = json.dumps(shaped) if args.output_type == default_output_type else shaped
+
+    if args.output_type == default_output_type:
+        fmatted = json.dumps(shaped)
+    elif args.output_type == obj_output_type:
+        fmatted = shaped
+    else:
+        raise ValueError("... ERROR: invalid output type '{}', {}".format(
+            args.output_type, output_type_help)
+        )
 
     print(fmatted)

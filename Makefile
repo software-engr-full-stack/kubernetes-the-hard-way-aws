@@ -20,16 +20,17 @@ _main_certs_dir := ${_main_secrets_dir}/test-certs
 _main_terraform_cmd := ${_main_app_dir}/terraform.sh
 
 plan:
-	"${_main_terraform_cmd}" "${name}" plan
+	"${_main_terraform_cmd}" plan
 
 apply:
-	"${_main_terraform_cmd}" "${name}" apply
+	"${_main_terraform_cmd}" apply
 
 destroy:
-	"${_main_terraform_cmd}" "${name}" destroy
+	"${_main_terraform_cmd}" destroy
 
 debug:
-	"${_main_sections_dir}/13-smoke-test/09-curl-nginx-test.py"
+	"${_main_sections_dir}/13-smoke-test/07-create-nginx-node-port-firewall-rule.sh"
+# 	"${_main_sections_dir}/13-smoke-test/09-curl-nginx-test.py"
 
 build:
 	cd "${_main_dir}" && \
