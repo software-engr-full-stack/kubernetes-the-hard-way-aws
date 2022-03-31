@@ -29,11 +29,9 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/run.py" \
+	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/03-the-kubernetes-frontend-load-balancer_verification.py" \
 		"${name}" \
-		"${_main_config_file}" \
-		"${_main_key_pair_file}" \
-		"${_main_inventory_dir}"
+		"${_main_config_file}"
 
 new-build:
 	cd "${_main_dir}" && \
@@ -45,11 +43,19 @@ new-build:
 		"${name}" \
 		"${_main_config_file}" && \
 	"${_main_sections_dir}/06-generating-the-data-encryption-config-and-key/run.py" && \
-	"${_main_sections_dir}/07-bootstrapping-the-etcd-cluster/run.py" \
+	"${_main_sections_dir}/07-bootstrapping-the-etcd-cluster/run-cm.py" \
 		"${name}" \
 		"${_main_config_file}" \
 		"${_main_key_pair_file}" \
-		"${_main_inventory_dir}"
+		"${_main_inventory_dir}" && \
+	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/01-run-cm.py" \
+		"${name}" \
+		"${_main_config_file}" \
+		"${_main_key_pair_file}" \
+		"${_main_inventory_dir}" && \
+	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/03-the-kubernetes-frontend-load-balancer_verification.py" \
+		"${name}" \
+		"${_main_config_file}"
 
 reset:
 	cd "${_main_dir}" && \

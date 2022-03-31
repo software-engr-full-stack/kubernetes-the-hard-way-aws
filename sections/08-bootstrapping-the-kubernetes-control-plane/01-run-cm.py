@@ -16,6 +16,7 @@ from lib.public_addresses import PublicAddresses  # noqa: E402
 from lib.path import Path  # noqa: E402
 
 
+# TODO: remove {{ item }} in titles
 class Run(object):
     def __init__(self, name, config_file, id_file, inventory_dir):
         config = Config(config_file)
@@ -35,7 +36,8 @@ class Run(object):
             print("... creating inventory file '{}' for IPs '{}'...".format(inventory_file, ip_addresses))
             CreateInventoryFile(ip_addresses, inventory_file)
 
-            subprocess.run([
+            # TODO: check if Ansible succeeded in other playbook executions
+            result = subprocess.run([
                 'ansible-playbook',
                 '--inventory-file', inventory_file,
                 '--extra-vars', 'id_file={}'.format(id_file),
@@ -49,6 +51,23 @@ class Run(object):
                 '--extra-vars', 'config_auto_gen_path={}'.format(path.config_auto_gen),
                 this_file.parent.joinpath('playbook-controller-1.yml')
             ], env=env)
+
+            if result.returncode != 0:
+                raise ValueError("... ERROR: sub process return code '{}' != 0".format(result.returncode))
+
+            result = subprocess.run([
+                'ansible-playbook',
+                '--inventory-file', inventory_file,
+                '--extra-vars', 'id_file={}'.format(id_file),
+                '--extra-vars', 'rem_usr={}'.format(config['remote_user']),
+                # TODO: use home_path in all playbooks
+                '--extra-vars', 'home_path=/home/{}'.format(config['remote_user']),
+                '--extra-vars', 'config_auto_gen_path={}'.format(path.config_auto_gen),
+                this_file.parent.joinpath('playbook-controller-2.yml')
+            ], env=env)
+
+            if result.returncode != 0:
+                raise ValueError("... ERROR: sub process return code '{}' != 0".format(result.returncode))
 
 
 Run(*sys.argv[1:])
