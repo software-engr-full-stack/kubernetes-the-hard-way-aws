@@ -29,9 +29,11 @@ destroy:
 	"${_main_terraform_cmd}" "${name}" destroy
 
 debug:
-	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/03-the-kubernetes-frontend-load-balancer_verification.py" \
+	"${_main_sections_dir}/09-bootstrapping-the-kubernetes-worker-nodes/run-cm.py" \
 		"${name}" \
-		"${_main_config_file}"
+		"${_main_config_file}" \
+		"${_main_key_pair_file}" \
+		"${_main_inventory_dir}"
 
 new-build:
 	cd "${_main_dir}" && \
@@ -55,7 +57,12 @@ new-build:
 		"${_main_inventory_dir}" && \
 	"${_main_sections_dir}/08-bootstrapping-the-kubernetes-control-plane/03-the-kubernetes-frontend-load-balancer_verification.py" \
 		"${name}" \
-		"${_main_config_file}"
+		"${_main_config_file}" && \
+	"${_main_sections_dir}/09-bootstrapping-the-kubernetes-worker-nodes/run-cm.py" \
+		"${name}" \
+		"${_main_config_file}" \
+		"${_main_key_pair_file}" \
+		"${_main_inventory_dir}"
 
 reset:
 	cd "${_main_dir}" && \
