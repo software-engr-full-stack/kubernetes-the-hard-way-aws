@@ -1,0 +1,50 @@
+---
+- hosts: default
+
+  remote_user: '{{ rem_usr }}'
+
+  vars:
+    ansible_ssh_private_key_file: '{{ id_file }}'
+    custom_ansible_lib_dir: '../../lib/ansible-tasks'
+
+  tasks:
+    - name: 'Provisioning a Kubernetes Worker Node: set facts'
+      set_fact:
+        playbook_title: 'Provisioning a Kubernetes Worker Node'
+        admin_config_dest: '{{ home_path }}/admin.kubeconfig'
+
+    - name: '{{ playbook_title }}: verification, copy config files'
+      ansible.builtin.copy:
+        src: '{{ config_auto_gen_path }}/admin.kubeconfig'
+        dest: '{{ admin_config_dest }}'
+
+    - name: '{{ playbook_title }}: verification, command'
+      ansible.builtin.command:
+        argv:
+          - /usr/local/bin/kubectl
+          - get
+          - nodes
+          - --kubeconfig
+          - '{{ admin_config_dest }}'
+      register: result
+
+    - name: '{{ playbook_title }}: verification, result'
+      debug:
+        msg: '{{ result.stdout }}'
+
+    - name: '{{ playbook_title }}: verification, expected output'
+      debug:
+        msg: |
+          NAME             STATUS   ROLES    AGE     VERSION
+          ip-10-240-0-20   Ready    <none>   5m49s   v1.21.0
+
+    - name: '{{ playbook_title }}: unset facts'
+      set_fact:
+        playbook_title:
+
+  handlers:
+  - name: restart-ssh
+    become: yes
+    service:
+      name: ssh
+      state: restarted
