@@ -22,7 +22,9 @@ class PortForwardLocalHostCurlTest(object):
         pod_name = result.stdout.decode('utf-8')
 
         # Delay because "error: unable to forward port because pod is not running. Current status=Pending"
-        time.sleep(4)
+        delay = 25
+        print("... sleeping for '{}' seconds...".format(delay))
+        time.sleep(delay)
 
         port_forward_proc = subprocess.Popen(['kubectl', 'port-forward', pod_name, '8080:80'])
         print("... port forward process '{}'...".format(port_forward_proc.pid))
