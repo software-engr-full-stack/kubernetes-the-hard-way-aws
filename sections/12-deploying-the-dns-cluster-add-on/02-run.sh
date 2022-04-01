@@ -34,7 +34,8 @@ EOF
     --output jsonpath='{.items[0].metadata.name}' >/dev/null; then
     kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
 
-    local delay=10
+    # Because "error: unable to upgrade connection: container not found ("busybox")"
+    local delay=15
     echo "... sleeping for '$delay' seconds"
     sleep "$delay"
   fi
