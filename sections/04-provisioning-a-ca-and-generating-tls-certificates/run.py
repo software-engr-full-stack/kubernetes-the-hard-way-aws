@@ -28,10 +28,6 @@ class Run(object):
         certs_path = path.certs
         certs_path.mkdir(parents=True, exist_ok=True)
 
-        if self._certs_present(certs_path):
-            print('... certificates already created, returning...')
-            return
-
         self._certs(config, public_addresses, certs_path)
 
     def _sync_and_delay(self, delay=2):
