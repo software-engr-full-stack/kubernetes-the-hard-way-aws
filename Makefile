@@ -19,11 +19,9 @@ destroy:
 	make delete-key-pair && \
 	"${_main_terraform_cmd}" destroy
 
-debug:
-	"${_main_app_dir}/lib/key_pair.py" create
-
 build:
 	cd "${_main_app_dir}" && \
+	"${_main_sections_dir}/01-prerequisites/run.sh" && \
 	make create-key-pair && \
 	make apply  && \
 	"${_main_sections_dir}/04-provisioning-a-ca-and-generating-tls-certificates/run.py" && \
