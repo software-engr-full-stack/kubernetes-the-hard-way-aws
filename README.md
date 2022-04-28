@@ -1,3 +1,10 @@
+# Requirements (TODO)
+  cfssl: follow instructions on how to install or `go get github.com/cloudflare/cfssl/cmd/...` (must be inside a module (have go.mod in directory you're executing the `go get` command))
+
+  pip install pyyaml cryptography ansible
+
+  kubectl: follow instructions, use native package management
+
 # Kubernetes The Hard Way - AWS - Terraform, Ansible
 
 This project is based on [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) and [Kubernetes The Hard Way - AWS](https://github.com/slawekzachcial/kubernetes-the-hard-way-aws). It takes [Kubernetes The Hard Way - AWS](https://github.com/slawekzachcial/kubernetes-the-hard-way-aws) a step further by using Terraform to provision AWS resources, Ansible for configuration management, and Python and shell scripts for various glue code. It automates the whole process of bringing up a Kubernetes cluster while maintaining a lab-style flow and file structure similar to [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way). It was created for the purpose of learning Kubernetes.
