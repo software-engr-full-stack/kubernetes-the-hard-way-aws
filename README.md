@@ -1,9 +1,14 @@
 # Requirements (TODO)
-  cfssl: follow instructions on how to install or `go install github.com/cloudflare/cfssl/cmd/...` (must be inside a module (have go.mod in directory you're executing the `go get` command)) (asdf reshim, rehash, delete other Go versions)
 
-  pip install pyyaml cryptography ansible
+  1. Install the AWS command-line tool `aws`
 
-  kubectl: follow instructions, use native package management
+  2. Install the Kubernetes command-line tool `kubectl`
+
+  3. Install Terraform
+
+  4. Install the following Python modules: `pyyaml`, `cryptography`, and `ansible`
+
+  5. Install Cloudflare SSL tools: `cfssl`, `cfssljson`, etc.
 
 # Kubernetes The Hard Way - AWS - Terraform, Ansible
 
