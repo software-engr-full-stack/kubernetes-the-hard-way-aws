@@ -1,4 +1,4 @@
-# Requirements (TODO)
+# Requirements
 
   1. Install the AWS command-line tool `aws`
 
@@ -6,9 +6,11 @@
 
   3. Install Terraform
 
-  4. Install the following Python modules: `ansible`, `pyyaml`, and `cryptography`
+  4. Install the Python package manager `pip`
 
-  5. Install Cloudflare SSL tools: `cfssl`, `cfssljson`, etc.
+  5. Install the following Python modules: `ansible`, `pyyaml`, and `cryptography`
+
+  6. Install the Cloudflare SSL tools: `cfssl` and `cfssljson`
 
 # Kubernetes The Hard Way - AWS - Terraform, Ansible
 
@@ -29,19 +31,15 @@ This project uses AWS resources. The authors shall not be responsible for AWS co
 
 ## Usage
 
-1. Make sure you have satisfied the prerequisites (TODO)
+1. Clone this repository
 
-2. Install the client tools (TODO)
+2. Change directory into the clone repository
 
-3. Clone this repository
+3. Change the Terraform backend to your backend. If you're not familiar with Terraform, it's probably better to just use a local backend. Make sure that git ignores the backend/state files that will be produced when running Terraform (TODO).
 
-4. Change directory into the clone repository
+4. `make build` will build your Kubernetes cluster
 
-5. Change the Terraform backend to your backend. If you're not familiar with Terraform, it's probably better to just use a local backend. Make sure that git ignores the backend/state files that will be produced when running Terraform (TODO).
-
-6. `make build` will build your Kubernetes cluster
-
-7. `make destroy` will delete all provisioned resources
+5. `make destroy` will delete all provisioned resources
 
 ## Configuration
 
@@ -53,9 +51,11 @@ Only section 13, the smoke test, is idempotent. There may be other sections or p
 
 ## TODO
 
-- [ ] Automate the checking of prerequisites
+- [x] Automate the checking of prerequisites
 
-- [ ] Check if client tools are installed
+- [x] Check if client tools are installed
+
+- [ ] Fix the "error dialing backend...127.0.0.1:53: no such host" intermittent issue
 
 - [ ] Write clearer explanation of how to deal with Terraform backend
 
