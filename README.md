@@ -6,7 +6,7 @@
 
   3. Install Terraform
 
-  4. Install the following Python modules: `pyyaml`, `cryptography`, and `ansible`
+  4. Install the following Python modules: `ansible`, `pyyaml`, and `cryptography`
 
   5. Install Cloudflare SSL tools: `cfssl`, `cfssljson`, etc.
 
