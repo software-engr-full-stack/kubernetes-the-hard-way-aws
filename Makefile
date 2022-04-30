@@ -16,8 +16,9 @@ apply:
 	"${_main_terraform_cmd}" apply
 
 destroy:
-	make delete-key-pair && \
-	"${_main_terraform_cmd}" destroy
+	make delete-key-pair; \
+	"${_main_terraform_cmd}" destroy && \
+	rm -rf "${_main_app_dir}/secrets"
 
 build:
 	cd "${_main_app_dir}" && \
