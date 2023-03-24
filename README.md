@@ -47,7 +47,13 @@ You can change the configuration file, `config.yml`, to suit your needs. Under t
 
 ## Idempotency
 
-Only section 13, the smoke test, is idempotent. There may be other sections or parts of other sections that are idempotent but I haven't kept track of which ones are idempotent.
+- [x] Section 10
+
+- [x] Section 11
+
+- [x] Section 12
+
+- [x] Section 13
 
 ## TODO
 
